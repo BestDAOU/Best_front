@@ -33,6 +33,12 @@ const MainPage = () => {
   const [isUploadHovered, setIsUploadHovered] = useState(false); // 업로드 버튼 호버 상태
   const [isLoading, setIsLoading] = useState(false);
 
+  // 즉시, 예약 전송 모드를 위한 변수수
+  const [isReserveMode, setIsReserveMode] = useState(false);
+  const [reserveDate, setReserveDate] = useState("");
+  const [reserveHour, setReserveHour] = useState("12");
+  const [reserveMinute, setReserveMinute] = useState("00");
+
   // 메시지에서 키워드를 추출하는 함수
   const extractKeywords = async (message) => {
     try {
@@ -206,36 +212,22 @@ const MainPage = () => {
     event.preventDefault(); // 기본 드래그 오버 동작 방지
   };
 
-  const handleReserveButtonClick = () => {
+  const handleReserveSend = () => {
     const mergedData = mergePhoneAndMessages();
 
-    const reserveTime = prompt(
-      "예약 발송 시간을 입력하세요 (예: 2025-03-23 15:30)"
-    );
-    if (!reserveTime) {
-      alert("예약 시간이 입력되지 않았습니다.");
+    if (!reserveDate) {
+      alert("예약 날짜를 선택해주세요.");
       return;
     }
 
-    // 날짜 포맷 유효성 검사
-    const isValid = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(reserveTime);
-    if (!isValid) {
-      alert("올바른 날짜 형식을 입력해주세요. (예: 2025-03-23 15:30)");
-      return;
-    }
+    const reserveTime = `${reserveDate} ${reserveHour}:${reserveMinute}`;
 
-    try {
-      console.log("예약 데이터:", {
-        messages: mergedData,
-        reserveTime,
-      });
+    console.log("예약 데이터:", {
+      messages: mergedData,
+      reserveTime,
+    });
 
-      // TODO: 여기에 예약 발송 API 호출
-      alert(`메시지가 ${reserveTime}에 예약되었습니다!`);
-    } catch (error) {
-      console.error("예약 실패:", error);
-      alert("예약 중 오류가 발생했습니다.");
-    }
+    alert(`${reserveTime}에 메시지가 예약되었습니다.`);
   };
 
   return (
@@ -447,16 +439,91 @@ const MainPage = () => {
           selectedContacts={selectedContacts}
           setSelectedContacts={setSelectedContacts}
         />
+
+        <div style={styles.reserveSettingSection}>
+          <p
+            style={{
+              marginBottom: "10px",
+              fontWeight: "bold",
+              fontSize: "18px",
+            }}
+          >
+            발송 설정
+          </p>
+          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+            <button
+              onClick={() => setIsReserveMode(false)}
+              style={{
+                padding: "12px 24px",
+                border: "1px solid #ccc",
+                backgroundColor: !isReserveMode ? "#e8f0fe" : "white",
+                color: !isReserveMode ? "#1d4ed8" : "#666",
+                fontWeight: !isReserveMode ? "bold" : "normal",
+                borderRadius: "6px 0 0 6px",
+                cursor: "pointer",
+                borderRight: "none",
+                fontSize: "14px",
+              }}
+            >
+              ✓ 즉시 발송
+            </button>
+            <button
+              onClick={() => setIsReserveMode(true)}
+              style={{
+                padding: "12px 24px",
+                border: "1px solid #ccc",
+                backgroundColor: isReserveMode ? "#e8f0fe" : "white",
+                color: isReserveMode ? "#1d4ed8" : "#666",
+                fontWeight: isReserveMode ? "bold" : "normal",
+                borderRadius: "0 6px 6px 0",
+                cursor: "pointer",
+                fontSize: "14px",
+              }}
+            >
+              ✓ 예약 발송
+            </button>
+          </div>
+
+          {isReserveMode && (
+            <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+              <input
+                type="date"
+                value={reserveDate}
+                onChange={(e) => setReserveDate(e.target.value)}
+                style={styles.datePicker}
+              />
+
+              <select
+                value={reserveHour}
+                onChange={(e) => setReserveHour(e.target.value)}
+                style={styles.selectBox}
+              >
+                {[...Array(24).keys()].map((h) => (
+                  <option key={h} value={String(h).padStart(2, "0")}>
+                    {String(h).padStart(2, "0")}시
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={reserveMinute}
+                onChange={(e) => setReserveMinute(e.target.value)}
+                style={styles.selectBox}
+              >
+                {["00", "10", "20", "30", "40", "50"].map((m) => (
+                  <option key={m} value={m}>
+                    {m}분
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
         {/* 전송하기 버튼을 주소록 바로 아래에 배치 */}
         <div style={styles.sendButtonContainer}>
           <button style={styles.sendButton} onClick={handleSendButtonClick}>
             전송하기
-          </button>
-          <button
-            style={styles.reserveButton}
-            onClick={handleReserveButtonClick}
-          >
-            예약하기
           </button>
         </div>
       </div>
@@ -749,6 +816,47 @@ const styles = {
     width: "200px",
     textAlign: "center",
     marginLeft: "20px", // 전송하기 버튼과 간격
+  },
+  reserveSettingSection: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F0F4FA",
+    padding: "30px",
+    borderRadius: "12px",
+    width: "1000px",
+    maxWidth: "100%",
+    margin: "0 auto 30px auto",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+  },
+  datePicker: {
+    padding: "10px 15px",
+    borderRadius: "8px",
+    border: "1px solid #ccc",
+    fontSize: "14px",
+    backgroundColor: "#fff",
+    color: "#333",
+    cursor: "pointer",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+  },
+
+  selectBox: {
+    padding: "10px 15px",
+    borderRadius: "8px",
+    border: "1px solid #ccc",
+    fontSize: "14px",
+    backgroundColor: "#fff",
+    color: "#333",
+    cursor: "pointer",
+    appearance: "none", // 기본 화살표 제거 (크롬, 사파리)
+    WebkitAppearance: "none", // 사파리
+    MozAppearance: "none", // 파이어폭스
+    backgroundImage:
+      'url(\'data:image/svg+xml;utf8,<svg fill="%23666" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>\')',
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 10px center",
+    backgroundSize: "16px",
   },
 };
 
