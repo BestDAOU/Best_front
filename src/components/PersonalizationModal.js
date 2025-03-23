@@ -23,10 +23,9 @@ const PersonalizationModal = ({
 
   const currentContact = selectedContacts[currentIndex];
   const { tag, memo } = currentContact; // 현재 선택된 연락처의 tag와 memo 가져오기
-  const [isHovering, setIsHovering] = useState(false);
+  // 기존 isHovering → 새로운 state로 변경
+  const [hoveringTarget, setHoveringTarget] = useState(null);
   const [selectedToneExamples, setSelectedToneExamples] = useState([]);
-  const handleMouseEnter = () => setIsHovering(true);
-  const handleMouseLeave = () => setIsHovering(false);
   const removeEmojis = (text) => {
     return text.replace(
       /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}]/gu,
@@ -207,6 +206,10 @@ const PersonalizationModal = ({
       [currentContact.id]: message, // 현재 연락처의 텍스트를 기본 메시지로 변경
     }));
   };
+  const handleToneAnalysis = () => {
+    alert("대화 말투 추출 기능은 곧 제공될 예정입니다!");
+    // TODO: 실제 말투 분석 로직 구현 예정
+  };
 
   return (
     <div style={styles.modalOverlay}>
@@ -214,7 +217,22 @@ const PersonalizationModal = ({
         {loading && <MessageAnimation />}
         {/* 왼쪽 영역 */}
         <div style={styles.leftSection}>
-          <h2 style={styles.title}>텍스트 개인 맞춤화</h2>
+          <div style={styles.titleWithInlineButton}>
+            <h2 style={styles.inlineTitle}>텍스트 개인 맞춤화</h2>
+            <button
+              onMouseEnter={() => setHoveringTarget("extract")}
+              onMouseLeave={() => setHoveringTarget(null)}
+              style={{
+                ...styles.inlineToneExtractButton,
+                ...(hoveringTarget === "extract" &&
+                  styles.inlineToneExtractButtonHover),
+              }}
+              onClick={handleToneAnalysis}
+            >
+              대화 말투 추출
+            </button>
+          </div>
+
           {currentContact && (
             <>
               <div style={styles.inputGroup}>
@@ -303,20 +321,25 @@ const PersonalizationModal = ({
             <span style={styles.convertLabel}>텍스트 변환</span>
             <button
               type="button"
-              style={styles.convertButton}
               onClick={handleConvert}
               disabled={loading}
+              onMouseEnter={() => setHoveringTarget("convert")}
+              onMouseLeave={() => setHoveringTarget(null)}
+              style={{
+                ...styles.convertButton,
+                ...(hoveringTarget === "convert" && styles.convertButtonHover),
+              }}
             >
               {loading ? "변환 중..." : "변환"}
             </button>
             <button
               type="button"
               onClick={initMessage}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
+              onMouseEnter={() => setHoveringTarget("reset")}
+              onMouseLeave={() => setHoveringTarget(null)}
               style={{
                 ...styles.resetButton,
-                ...(isHovering && styles.resetButtonHover), // hover 시 추가 스타일 적용
+                ...(hoveringTarget === "reset" && styles.resetButtonHover),
               }}
             >
               ↺ 되돌리기
@@ -422,13 +445,6 @@ const styles = {
     resize: "none",
     boxSizing: "border-box",
     height: "400px",
-  },
-
-  title: {
-    marginBottom: "20px",
-    fontSize: "22px",
-    fontWeight: "bold",
-    color: "#4A90E2", // 제목 색상
   },
   form: {
     display: "flex",
@@ -579,6 +595,37 @@ const styles = {
     fontSize: "14px",
     color: "#999",
     textAlign: "center",
+  },
+  titleWithInlineButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px", // 제목과 버튼 사이 간격
+    marginBottom: "20px",
+  },
+  inlineToneExtractButton: {
+    backgroundColor: "#4A90E2",
+    color: "white",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: "regular",
+    transition: "0.3s",
+    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+    height: "32px", // 텍스트 높이와 잘 맞게
+    lineHeight: "1", // 텍스트 수직 정렬
+  },
+  convertButtonHover: {
+    backgroundColor: "#3a78c2",
+    transform: "scale(1.05)",
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+  },
+
+  inlineToneExtractButtonHover: {
+    backgroundColor: "#3a78c2",
+    transform: "scale(1.05)",
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
   },
 };
 
