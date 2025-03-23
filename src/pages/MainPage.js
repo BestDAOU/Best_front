@@ -206,6 +206,38 @@ const MainPage = () => {
     event.preventDefault(); // 기본 드래그 오버 동작 방지
   };
 
+  const handleReserveButtonClick = () => {
+    const mergedData = mergePhoneAndMessages();
+
+    const reserveTime = prompt(
+      "예약 발송 시간을 입력하세요 (예: 2025-03-23 15:30)"
+    );
+    if (!reserveTime) {
+      alert("예약 시간이 입력되지 않았습니다.");
+      return;
+    }
+
+    // 날짜 포맷 유효성 검사
+    const isValid = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(reserveTime);
+    if (!isValid) {
+      alert("올바른 날짜 형식을 입력해주세요. (예: 2025-03-23 15:30)");
+      return;
+    }
+
+    try {
+      console.log("예약 데이터:", {
+        messages: mergedData,
+        reserveTime,
+      });
+
+      // TODO: 여기에 예약 발송 API 호출
+      alert(`메시지가 ${reserveTime}에 예약되었습니다!`);
+    } catch (error) {
+      console.error("예약 실패:", error);
+      alert("예약 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <div style={styles.container}>
       {isLoading && <SendAnimation />}
@@ -419,6 +451,12 @@ const MainPage = () => {
         <div style={styles.sendButtonContainer}>
           <button style={styles.sendButton} onClick={handleSendButtonClick}>
             전송하기
+          </button>
+          <button
+            style={styles.reserveButton}
+            onClick={handleReserveButtonClick}
+          >
+            예약하기
           </button>
         </div>
       </div>
@@ -699,6 +737,19 @@ const styles = {
   },
   hiddenFileInput: {
     display: "none",
+  },
+  reserveButton: {
+    backgroundColor: "#5D6D7E", // 오렌지 색상
+    color: "white",
+    border: "none",
+    padding: "15px 30px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    borderRadius: "8px",
+    cursor: "pointer",
+    width: "200px",
+    textAlign: "center",
+    marginLeft: "20px", // 전송하기 버튼과 간격
   },
 };
 
