@@ -586,7 +586,6 @@ const styles = {
     lineHeight: "1.5",
     outline: "none",
     marginBottom: "10px",
-    fontSize: "18px",
     fontFamily: "'Arial', sans-serif", // 폰트 설정
     fontWeight: "bold", // 글씨를 bold로 설정
   },
