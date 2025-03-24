@@ -450,37 +450,30 @@ const MainPage = () => {
           >
             발송 설정
           </p>
-          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+          <div style={styles.toggleWrapper}>
             <button
               onClick={() => setIsReserveMode(false)}
               style={{
-                padding: "12px 24px",
-                border: "1px solid #ccc",
-                backgroundColor: !isReserveMode ? "#e8f0fe" : "white",
-                color: !isReserveMode ? "#1d4ed8" : "#666",
-                fontWeight: !isReserveMode ? "bold" : "normal",
-                borderRadius: "6px 0 0 6px",
-                cursor: "pointer",
-                borderRight: "none",
-                fontSize: "14px",
+                ...styles.toggleButton,
+                ...(isReserveMode
+                  ? styles.inactiveButton
+                  : styles.activeButton),
+                borderRadius: "8px 0 0 8px",
               }}
             >
-              ✓ 즉시 발송
+              즉시 발송
             </button>
             <button
               onClick={() => setIsReserveMode(true)}
               style={{
-                padding: "12px 24px",
-                border: "1px solid #ccc",
-                backgroundColor: isReserveMode ? "#e8f0fe" : "white",
-                color: isReserveMode ? "#1d4ed8" : "#666",
-                fontWeight: isReserveMode ? "bold" : "normal",
-                borderRadius: "0 6px 6px 0",
-                cursor: "pointer",
-                fontSize: "14px",
+                ...styles.toggleButton,
+                ...(isReserveMode
+                  ? styles.activeButton
+                  : styles.inactiveButton),
+                borderRadius: "0 8px 8px 0",
               }}
             >
-              ✓ 예약 발송
+              예약 발송
             </button>
           </div>
 
@@ -823,40 +816,70 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#F0F4FA",
-    padding: "30px",
+    padding: "12px 40px",
     borderRadius: "12px",
-    width: "1000px",
+    width: "850px",
     maxWidth: "100%",
     margin: "0 auto 30px auto",
     boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+    fontSize: "16px",
   },
   datePicker: {
     padding: "10px 15px",
     borderRadius: "8px",
     border: "1px solid #ccc",
-    fontSize: "14px",
+    fontSize: "16px",
+    width: "200px", // 추가된 너비
     backgroundColor: "#fff",
     color: "#333",
     cursor: "pointer",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
   },
 
   selectBox: {
     padding: "10px 15px",
     borderRadius: "8px",
     border: "1px solid #ccc",
-    fontSize: "14px",
+    fontSize: "16px",
+    width: "120px", // 시간과 분 선택 박스 너비 확장
     backgroundColor: "#fff",
     color: "#333",
     cursor: "pointer",
-    appearance: "none", // 기본 화살표 제거 (크롬, 사파리)
-    WebkitAppearance: "none", // 사파리
-    MozAppearance: "none", // 파이어폭스
+    appearance: "none",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
     backgroundImage:
       'url(\'data:image/svg+xml;utf8,<svg fill="%23666" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>\')',
     backgroundRepeat: "no-repeat",
     backgroundPosition: "right 10px center",
     backgroundSize: "16px",
+  },
+  toggleWrapper: {
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: "20px",
+    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)",
+  },
+
+  toggleButton: {
+    padding: "14px 36px",
+    border: "1px solid #ccc",
+    fontSize: "15px",
+    cursor: "pointer",
+    outline: "none",
+    transition: "0.3s ease-in-out",
+    fontWeight: "bold",
+  },
+
+  activeButton: {
+    backgroundColor: "#4A90E2",
+    color: "white",
+    border: "1px solid #4A90E2",
+  },
+
+  inactiveButton: {
+    backgroundColor: "#f0f0f0",
+    color: "#666",
+    border: "1px solid #ccc",
   },
 };
 
