@@ -206,9 +206,55 @@ const PersonalizationModal = ({
       [currentContact.id]: message, // 현재 연락처의 텍스트를 기본 메시지로 변경
     }));
   };
-  const handleToneAnalysis = () => {
-    alert("대화 말투 추출 기능은 곧 제공될 예정입니다!");
-    // TODO: 실제 말투 분석 로직 구현 예정
+
+  const handleToneFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const content = e.target.result;
+      console.log("업로드된 파일 내용:", content); // ✅ 콘솔에 출력
+
+      // --- 아래 API 호출 로직은 주석 처리해두었습니다 ---
+      /*
+      try {
+        const response = await axios.post(
+          "http://your-server.com/api/extract-tone",
+          {
+            content,
+            name: currentContact?.name || "",
+            tag: currentContact?.tag || "",
+            memo: currentContact?.memo || "",
+          }
+        );
+  
+        const extractedToneLabel = response.data.tone;
+        alert(`분석된 말투: ${extractedToneLabel}`);
+  
+        const matchedTone = tones.find((t) => t.label === extractedToneLabel);
+        if (matchedTone) {
+          setSelectedTones((prev) => ({
+            ...prev,
+            [currentContact.id]: matchedTone.instruction,
+          }));
+  
+          const matchingExamples = examplesobj.find(
+            (ex) => ex.label === matchedTone.label
+          );
+          setSelectedToneExamples(matchingExamples?.examples || []);
+        } else {
+          alert("분석된 말투가 등록된 톤 목록에 없습니다.");
+        }
+      } catch (error) {
+        console.error("서버 API 오류:", error);
+        alert("말투 분석에 실패했습니다.");
+      }
+      */
+    };
+
+    reader.readAsText(file);
   };
 
   return (
@@ -219,15 +265,22 @@ const PersonalizationModal = ({
         <div style={styles.leftSection}>
           <div style={styles.titleWithInlineButton}>
             <h2 style={styles.inlineTitle}>텍스트 개인 맞춤화</h2>
+            <input
+              type="file"
+              accept=".txt"
+              onChange={handleToneFileUpload}
+              style={{ display: "none" }}
+              id="toneFileInput"
+            />
             <button
-              onMouseEnter={() => setHoveringTarget("extract")}
-              onMouseLeave={() => setHoveringTarget(null)}
+              onClick={() => document.getElementById("toneFileInput").click()}
               style={{
                 ...styles.inlineToneExtractButton,
                 ...(hoveringTarget === "extract" &&
                   styles.inlineToneExtractButtonHover),
               }}
-              onClick={handleToneAnalysis}
+              onMouseEnter={() => setHoveringTarget("extract")}
+              onMouseLeave={() => setHoveringTarget(null)}
             >
               대화 말투 추출
             </button>
