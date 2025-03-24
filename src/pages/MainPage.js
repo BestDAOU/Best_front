@@ -11,6 +11,41 @@ import { DiFirebase } from "react-icons/di";
 import { sendMessages } from "../services/PpurioApiService";
 import SendAnimation from "../components/SendAnimation";
 import Select from "react-select";
+import { format } from "date-fns";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
+
+// 현재 시간을 기준으로 가장 가까운 5분 단위의 시간 계산
+const getInitialReserveTime = () => {
+  const now = new Date();
+  const roundedMinutes = Math.ceil(now.getMinutes() / 5) * 5;
+
+  let hour = now.getHours();
+  let minute = roundedMinutes;
+  let date = new Date(now);
+
+  if (roundedMinutes >= 60) {
+    hour = (hour + 1) % 24;
+    minute = 0;
+
+    if (hour === 0) {
+      // 날짜를 하루 증가시켜줌
+      date.setDate(date.getDate() + 1);
+    }
+  }
+
+  return {
+    hour: String(hour).padStart(2, "0"),
+    minute: String(minute).padStart(2, "0"),
+    date,
+  };
+};
+
+const {
+  hour: initialHour,
+  minute: initialMinute,
+  date: initialDate,
+} = getInitialReserveTime();
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -36,9 +71,19 @@ const MainPage = () => {
 
   // 즉시, 예약 전송 모드를 위한 변수수
   const [isReserveMode, setIsReserveMode] = useState(false);
-  const [reserveDate, setReserveDate] = useState("");
-  const [reserveHour, setReserveHour] = useState("12");
-  const [reserveMinute, setReserveMinute] = useState("00");
+  // reserveDate를 Date 객체로 바꿔줘야 함
+  const [reserveDate, setReserveDate] = useState(initialDate);
+  const [reserveHour, setReserveHour] = useState(initialHour);
+  const [reserveMinute, setReserveMinute] = useState(initialMinute);
+
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false); //달력 창 열고 닫기 위한 변수
+  const formattedDate = reserveDate ? format(reserveDate, "yyyy-MM-dd") : ""; // 년-월-일 형식으로 변환
+
+  // 날짜 선택되면 값 저장 후 닫기
+  const handleDateSelect = (date) => {
+    setReserveDate(date);
+    setIsDatePickerOpen(false); // 선택하면 닫힘
+  };
 
   // 메시지에서 키워드를 추출하는 함수
   const extractKeywords = async (message) => {
@@ -213,24 +258,6 @@ const MainPage = () => {
     event.preventDefault(); // 기본 드래그 오버 동작 방지
   };
 
-  const handleReserveSend = () => {
-    const mergedData = mergePhoneAndMessages();
-
-    if (!reserveDate) {
-      alert("예약 날짜를 선택해주세요.");
-      return;
-    }
-
-    const reserveTime = `${reserveDate} ${reserveHour}:${reserveMinute}`;
-
-    console.log("예약 데이터:", {
-      messages: mergedData,
-      reserveTime,
-    });
-
-    alert(`${reserveTime}에 메시지가 예약되었습니다.`);
-  };
-
   const hourOptions = [...Array(24).keys()].map((h) => ({
     value: String(h).padStart(2, "0"),
     label: `${String(h).padStart(2, "0")}시`,
@@ -240,6 +267,28 @@ const MainPage = () => {
     const m = String(i * 5).padStart(2, "0");
     return { value: m, label: `${m}분` };
   });
+
+  const handleReserveSend = () => {
+    const mergedData = mergePhoneAndMessages();
+
+    if (!reserveDate) {
+      alert("예약 날짜를 선택해주세요.");
+      return;
+    }
+
+    const reserveTime = `${format(
+      reserveDate,
+      "yyyy-MM-dd"
+    )} ${reserveHour}:${reserveMinute}`;
+
+    console.log("📦 예약 메시지 전송 정보:");
+    console.log("✅ 선택된 날짜:", format(reserveDate, "yyyy-MM-dd"));
+    console.log("✅ 선택된 시간:", `${reserveHour}:${reserveMinute}`);
+    console.log("✅ 전체 예약 시간:", reserveTime);
+    console.log("✅ 전송될 메시지 목록:", mergedData);
+
+    alert(`${reserveTime}에 메시지가 예약되었습니다.`);
+  };
 
   return (
     <div style={styles.container}>
@@ -490,12 +539,36 @@ const MainPage = () => {
 
           {isReserveMode && (
             <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-              <input
-                type="date"
-                value={reserveDate}
-                onChange={(e) => setReserveDate(e.target.value)}
-                style={styles.datePicker}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type="text"
+                  value={formattedDate}
+                  onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                  readOnly
+                  placeholder="날짜 선택"
+                  style={styles.datePicker}
+                />
+                {isDatePickerOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      zIndex: 10,
+                      backgroundColor: "white",
+                      border: "1px solid #ccc",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                      marginTop: "15px",
+                      width: "320px",
+                    }}
+                  >
+                    <DayPicker
+                      mode="single"
+                      selected={reserveDate}
+                      onSelect={handleDateSelect}
+                    />
+                  </div>
+                )}
+              </div>
 
               <div style={{ width: "140px" }}>
                 <Select
@@ -524,7 +597,10 @@ const MainPage = () => {
 
         {/* 전송하기 버튼을 주소록 바로 아래에 배치 */}
         <div style={styles.sendButtonContainer}>
-          <button style={styles.sendButton} onClick={handleSendButtonClick}>
+          <button
+            style={styles.sendButton}
+            onClick={isReserveMode ? handleReserveSend : handleSendButtonClick}
+          >
             전송하기
           </button>
         </div>
@@ -866,11 +942,11 @@ const styles = {
     fontSize: "16px",
   },
   datePicker: {
-    padding: "10px 15px",
+    padding: "12px 15px",
     borderRadius: "8px",
     border: "1px solid #ccc",
     fontSize: "16px",
-    width: "200px", // 추가된 너비
+    width: "160px", // 추가된 너비
     backgroundColor: "#fff",
     color: "#333",
     cursor: "pointer",
