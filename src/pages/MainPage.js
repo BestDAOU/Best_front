@@ -10,6 +10,7 @@ import axios from "axios";
 import { DiFirebase } from "react-icons/di";
 import { sendMessages } from "../services/PpurioApiService";
 import SendAnimation from "../components/SendAnimation";
+import Select from "react-select";
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -229,6 +230,16 @@ const MainPage = () => {
 
     alert(`${reserveTime}에 메시지가 예약되었습니다.`);
   };
+
+  const hourOptions = [...Array(24).keys()].map((h) => ({
+    value: String(h).padStart(2, "0"),
+    label: `${String(h).padStart(2, "0")}시`,
+  }));
+
+  const minuteOptions = Array.from({ length: 60 / 5 }, (_, i) => {
+    const m = String(i * 5).padStart(2, "0");
+    return { value: m, label: `${m}분` };
+  });
 
   return (
     <div style={styles.container}>
@@ -486,29 +497,27 @@ const MainPage = () => {
                 style={styles.datePicker}
               />
 
-              <select
-                value={reserveHour}
-                onChange={(e) => setReserveHour(e.target.value)}
-                style={styles.selectBox}
-              >
-                {[...Array(24).keys()].map((h) => (
-                  <option key={h} value={String(h).padStart(2, "0")}>
-                    {String(h).padStart(2, "0")}시
-                  </option>
-                ))}
-              </select>
+              <div style={{ width: "140px" }}>
+                <Select
+                  options={hourOptions}
+                  value={hourOptions.find((opt) => opt.value === reserveHour)}
+                  onChange={(selected) => setReserveHour(selected.value)}
+                  styles={customSelectStyles}
+                  placeholder="시 선택"
+                />
+              </div>
 
-              <select
-                value={reserveMinute}
-                onChange={(e) => setReserveMinute(e.target.value)}
-                style={styles.selectBox}
-              >
-                {["00", "10", "20", "30", "40", "50"].map((m) => (
-                  <option key={m} value={m}>
-                    {m}분
-                  </option>
-                ))}
-              </select>
+              <div style={{ width: "140px" }}>
+                <Select
+                  options={minuteOptions}
+                  value={minuteOptions.find(
+                    (opt) => opt.value === reserveMinute
+                  )}
+                  onChange={(selected) => setReserveMinute(selected.value)}
+                  styles={customSelectStyles}
+                  placeholder="분 선택"
+                />
+              </div>
             </div>
           )}
         </div>
@@ -531,6 +540,38 @@ const MainPage = () => {
       </div>
     </div>
   );
+};
+
+const customSelectStyles = {
+  control: (provided) => ({
+    ...provided,
+    height: "45px",
+    borderRadius: "8px",
+    borderColor: "#ccc",
+    fontSize: "16px",
+  }),
+  menu: (provided) => ({
+    ...provided,
+    zIndex: 9999,
+    maxHeight: 180, // 6개 정도 보이는 높이로 설정
+    overflowY: "auto", // ✅ 내부에서만 스크롤 생기게
+    padding: 0, // ✅ 여백 없이 정리
+    margin: 0,
+  }),
+  menuList: (provided) => ({
+    ...provided,
+    maxHeight: 180, // ✅ menuList에도 명시적으로 적용
+    overflowY: "auto",
+    padding: 0,
+    margin: 0,
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isFocused ? "#e0e7ff" : "white",
+    color: "#333",
+    fontSize: "15px",
+    cursor: "pointer",
+  }),
 };
 
 const styles = {
