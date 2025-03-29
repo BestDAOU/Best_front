@@ -1,27 +1,42 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/images/logo.png";
 import { useUser } from "../store/UserContext";
 
 const Header = () => {
-  const { user } = useUser();
+  const { user, setUser } = useUser();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    setUser(null); // 유저 정보 제거
+    alert("로그아웃 되었습니다.");
+    navigate("/"); // 홈으로 이동
+  };
 
   return (
     <header style={styles.header}>
+      {/* 왼쪽: 로고 */}
       <div style={styles.leftSection}>
         <Link to="/" style={styles.logoLink}>
           <img src={logo} alt="Logo" style={styles.logo} />
         </Link>
       </div>
 
+      {/* 가운데: 브랜드 이름 */}
       <h1 style={styles.brand}>BESTDAOU</h1>
 
+      {/* 오른쪽: 사용자 정보 및 버튼 */}
       <div style={styles.rightSection}>
-        {user?.name ? (
-          <span style={styles.userName}>{user.name}님</span>
+        {user ? (
+          <>
+            <span style={styles.userName}>{user.name}님</span>
+            <button onClick={handleLogout} style={styles.logoutButton}>
+              로그아웃
+            </button>
+          </>
         ) : (
           <>
-            <Link to="/login" style={styles.signupButton}>
+            <Link to="/login" style={styles.loginButton}>
               로그인
             </Link>
             <Link to="/signup" style={styles.signupButton}>
@@ -71,9 +86,28 @@ const styles = {
     gap: "15px",
   },
   userName: {
-    fontSize: "24px",
+    fontSize: "20px",
     fontWeight: "500",
     color: "#333",
+    fontFamily: "'Poppins', 'Noto Sans KR', sans-serif",
+    letterSpacing: "0.8px",
+  },
+  logoutButton: {
+    backgroundColor: "#4A90E2",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    padding: "8px 14px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  loginButton: {
+    backgroundColor: "#4A90E2",
+    color: "white",
+    padding: "10px 20px",
+    borderRadius: "8px",
+    textDecoration: "none",
+    fontWeight: "bold",
   },
   signupButton: {
     backgroundColor: "#4A90E2",
@@ -81,7 +115,6 @@ const styles = {
     padding: "10px 20px",
     borderRadius: "8px",
     textDecoration: "none",
-    fontSize: "16px",
     fontWeight: "bold",
   },
 };
