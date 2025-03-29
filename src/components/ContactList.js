@@ -38,17 +38,19 @@ const ContactList = ({
   const toggleGroup = (groupName) => {
     const groupContacts = contacts.filter((c) => c.group === groupName);
 
-    // 체크된 상태일 땐 선택 해제
     const isAlreadySelected = groupContacts.every((gc) =>
       selectedContacts.some((sc) => sc.id === gc.id)
     );
 
     if (isAlreadySelected) {
+      // 선택 해제
       setSelectedContacts((prev) =>
         prev.filter((sc) => sc.group !== groupName)
       );
+      // 🔽 여기 추가
+      setActiveGroups((prev) => prev.filter((g) => g !== groupName));
     } else {
-      // 선택 안 된 경우 → 추가
+      // 선택 추가
       setSelectedContacts((prev) => {
         const newContacts = groupContacts.filter(
           (gc) => !prev.some((sc) => sc.id === gc.id)
@@ -56,7 +58,6 @@ const ContactList = ({
         return [...prev, ...newContacts];
       });
 
-      // convertedTexts에도 메시지 넣어줌
       setConvertedTexts((prev) => {
         const updated = { ...prev };
         groupContacts.forEach((c) => {
@@ -66,6 +67,9 @@ const ContactList = ({
         });
         return updated;
       });
+
+      // 🔽 여기 추가
+      setActiveGroups((prev) => [...prev, groupName]);
     }
   };
 
