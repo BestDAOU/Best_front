@@ -18,3 +18,7 @@ export const deleteMember = (id) =>
 
 // 5. 전체 회원 조회
 export const getAllMembers = () => axios.get(REST_API_BASE_URL);
+
+// ✅ 6. 로그인
+export const loginMember = (loginData) =>
+    axios.post(`${REST_API_BASE_URL}/login`, loginData);
