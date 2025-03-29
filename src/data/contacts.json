@@ -86,5 +86,41 @@
     "tag": "활발한 성격",
     "memo": "다양한 취미를 가진 친구",
     "tone": "친구 말투"
+  },
+  {
+    "id": 8,
+    "profile": "https://via.placeholder.com/40",
+    "name": "8",
+    "nickname": "동아리원",
+    "email": "Park@hansung.ac.kr",
+    "phone": "01033334444",
+    "group": "동아리",
+    "tag": "활발한 성격",
+    "memo": "다양한 취미를 가진 친구",
+    "tone": "친구 말투"
+  },
+  {
+    "id": 9,
+    "profile": "https://via.placeholder.com/40",
+    "name": "9",
+    "nickname": "동아리원",
+    "email": "Park@hansung.ac.kr",
+    "phone": "01033334444",
+    "group": "컴공",
+    "tag": "활발한 성격",
+    "memo": "다양한 취미를 가진 친구",
+    "tone": "친구 말투"
+  },
+  {
+    "id": 10,
+    "profile": "https://via.placeholder.com/40",
+    "name": "10",
+    "nickname": "동아리원",
+    "email": "Park@hansung.ac.kr",
+    "phone": "01033334444",
+    "group": "컴공",
+    "tag": "활발한 성격",
+    "memo": "다양한 취미를 가진 친구",
+    "tone": "친구 말투"
   }
 ]
