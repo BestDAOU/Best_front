@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import tonesobj from "../data/tones.json";
 import MessageAnimation from "../components/MessageAnimation";
-import examplesobj from "../data/examples.json"; // 예시목록들 가져오기
+import examplesobj from "../data/examples.json"; // 예시로만 보여줄 목록들 가져오기
+import PersonalizationService from "../services/PersonalizationService"; // Import the OpenAI service
 
 const PersonalizationModal = ({
   selectedContacts,
@@ -22,16 +23,9 @@ const PersonalizationModal = ({
   const [selectedTones, setSelectedTones] = useState({}); // 선택된 톤 상태
 
   const currentContact = selectedContacts[currentIndex];
-  const { tag, memo } = currentContact; // 현재 선택된 연락처의 tag와 memo 가져오기
   // 기존 isHovering → 새로운 state로 변경
   const [hoveringTarget, setHoveringTarget] = useState(null);
   const [selectedToneExamples, setSelectedToneExamples] = useState([]);
-  const removeEmojis = (text) => {
-    return text.replace(
-      /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}]/gu,
-      ""
-    );
-  };
 
   // handleToneSelection 함수 추가
   const handleToneSelection = (toneInstruction) => {
@@ -53,18 +47,6 @@ const PersonalizationModal = ({
   };
 
   const handleComplete = () => {
-    // // 완료 버튼 클릭 시 업데이트된 톤을 부모 컴포넌트로 전달
-    // const updatedContacts = selectedContacts.map((contact) => ({
-    //   ...contact,
-    //   tone: selectedTones[contact.id],
-    // }));
-    // setContacts((prevContacts) =>
-    //   prevContacts.map(
-    //     (contact) =>
-    //       updatedContacts.find((updated) => updated.id === contact.id) ||
-    //       contact
-    //   )
-    // ); // 부모의 contacts 배열 업데이트
     closeModal();
   };
 
@@ -112,12 +94,15 @@ const PersonalizationModal = ({
   }, [currentContact, tones]);
 
   const handleConvert = async () => {
-    const textToConvert = convertedTexts[currentContact.id] || "";
+    const textToConvert = convertedTexts[currentContact.id] || ""; //변환된 문자 배열 중 현재 수신자의 id
     if (!textToConvert) {
       alert("변환할 텍스트를 입력하세요.");
       return;
     }
-    const selectedToneInstruction = selectedTones[currentContact.id];
+
+    const selectedToneInstruction = selectedTones[currentContact.id]; // 선택된 유저의 선택된 어조 추출
+
+    // 톤.json에서 선택된 톤에 대한 라벨,설명,예시 정보 추출
     const selectedToneData = tones.find(
       (tone) => tone.instruction === selectedToneInstruction
     );
@@ -126,59 +111,26 @@ const PersonalizationModal = ({
       return;
     }
 
-    const { instruction, examples } = selectedToneData;
-
-    // 모든 예시를 프롬프트에 포함
-    const examplesText = examples
+    // 예시들이 배열이어서 한개의 문자열로 바꿈
+    const examplesText = selectedToneData.examples
       .map((example, index) => `Example ${index + 1}: "${example}"`)
       .join("\n");
 
-    const prompt = `
-    Please rewrite the following message in a tone that is described as follows:
-    "${instruction}"
-    The message should reflect the person's characteristics, notes, and the given examples.
-    Use appropriate line breaks to enhance readability.
-    The response must be written in Korean and should address the recipient by their name.
-    Do not include any sign-offs, sender's name, or signatures at the end of the message.
-    You Never use any emojis or emoticons throughout the message.
-    Original message: "${textToConvert}"
-    Recipient's name: "${currentContact.name}"
-    Tags: "${tag}"
-    Memo: "${memo}"
-    Examples for this tone:
-      ${examplesText}
-  `;
-
     setLoading(true);
+
     try {
-      const response = await axios.post(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          model: "gpt-4-turbo",
-          messages: [
-            {
-              role: "system",
-              content: "You are a helpful assistant.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          max_tokens: 1000,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-          },
-        }
-      );
-
+      // OpenAI 서비스 호출
+      const originalMessage = await PersonalizationService.convertText({
+        text: textToConvert,
+        name: currentContact.name,
+        tag: currentContact.tag,
+        memo: currentContact.memo,
+        instruction: selectedToneData.instruction,
+        examplesText: examplesText,
+      });
       // 이모지 제거 후 ContactList의 convertedTexts 업데이트
-      const originalMessage = response.data.choices[0].message.content.trim();
       const cleanedMessage = removeEmojis(originalMessage);
-
+      // 변환된 문자 내용으로 적용
       setConvertedTexts((prev) => ({
         ...prev,
         [currentContact.id]: cleanedMessage,
@@ -191,6 +143,13 @@ const PersonalizationModal = ({
       alert("텍스트 변환에 실패했습니다. 다시 시도해주세요.");
     }
     setLoading(false);
+  };
+
+  const removeEmojis = (text) => {
+    return text.replace(
+      /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}]/gu,
+      ""
+    );
   };
 
   const handleTextChange = (e) => {
@@ -216,42 +175,6 @@ const PersonalizationModal = ({
     reader.onload = (e) => {
       const content = e.target.result;
       console.log("업로드된 파일 내용:", content); // ✅ 콘솔에 출력
-
-      // --- 아래 API 호출 로직은 주석 처리해두었습니다 ---
-      /*
-      try {
-        const response = await axios.post(
-          "http://your-server.com/api/extract-tone",
-          {
-            content,
-            name: currentContact?.name || "",
-            tag: currentContact?.tag || "",
-            memo: currentContact?.memo || "",
-          }
-        );
-  
-        const extractedToneLabel = response.data.tone;
-        alert(`분석된 말투: ${extractedToneLabel}`);
-  
-        const matchedTone = tones.find((t) => t.label === extractedToneLabel);
-        if (matchedTone) {
-          setSelectedTones((prev) => ({
-            ...prev,
-            [currentContact.id]: matchedTone.instruction,
-          }));
-  
-          const matchingExamples = examplesobj.find(
-            (ex) => ex.label === matchedTone.label
-          );
-          setSelectedToneExamples(matchingExamples?.examples || []);
-        } else {
-          alert("분석된 말투가 등록된 톤 목록에 없습니다.");
-        }
-      } catch (error) {
-        console.error("서버 API 오류:", error);
-        alert("말투 분석에 실패했습니다.");
-      }
-      */
     };
 
     reader.readAsText(file);
