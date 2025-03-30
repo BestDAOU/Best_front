@@ -35,6 +35,9 @@ const ContactList = ({
 
   const [activeGroups, setActiveGroups] = useState([]); // 여러 그룹 선택을 위한 배열
 
+  const [isPersonalizeHovered, setIsPersonalizeHovered] = useState(false);
+  const [isAddContactHovered, setIsAddContactHovered] = useState(false);
+
   // This part correctly sets up the active groups
   const toggleGroup = (groupName) => {
     if (activeGroups.includes(groupName)) {
@@ -218,14 +221,34 @@ const ContactList = ({
               <span style={styles.selectAllText}>전체 선택</span>
             </div>
             <div style={styles.buttonsContainer}>
-              {/* 텍스트 개인 맞춤화 버튼에 onClick 이벤트 추가 */}
-              <button style={styles.personalizeButton} onClick={openModal}>
+              <button
+                style={
+                  isPersonalizeHovered
+                    ? {
+                        ...styles.personalizeButton,
+                        ...styles.personalizeButtonHover,
+                      }
+                    : styles.personalizeButton
+                }
+                onClick={openModal}
+                onMouseEnter={() => setIsPersonalizeHovered(true)}
+                onMouseLeave={() => setIsPersonalizeHovered(false)}
+              >
                 텍스트 개인 맞춤화
               </button>
-              {/* 연락처 추가 버튼 */}
+
               <button
-                style={styles.personalizeButton}
+                style={
+                  isAddContactHovered
+                    ? {
+                        ...styles.personalizeButton,
+                        ...styles.personalizeButtonHover,
+                      }
+                    : styles.personalizeButton
+                }
                 onClick={() => navigate("/contact-form")}
+                onMouseEnter={() => setIsAddContactHovered(true)}
+                onMouseLeave={() => setIsAddContactHovered(false)}
               >
                 <span style={styles.plusIcon}>+</span> &nbsp;연락처 추가
               </button>
@@ -475,7 +498,7 @@ const styles = {
     marginBottom: "10px",
   },
   icons: {
-    marginLeft: "160px",
+    marginLeft: "65px",
     display: "flex",
     alignItems: "center",
   },
@@ -492,21 +515,31 @@ const styles = {
     padding: "0",
   },
   buttonsContainer: {
-    marginRight: "80px",
+    marginRight: "10px",
     display: "flex",
     gap: "10px",
   },
+  // personalizeButton 스타일 업데이트
   personalizeButton: {
-    backgroundColor: "#0086BF",
+    background: "#4A90E2",
     color: "white",
     border: "none",
-    padding: "10px 20px",
-    borderRadius: "5px",
+    padding: "12px 25px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    borderRadius: "25px",
     cursor: "pointer",
+    transition: "0.3s",
+    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
     display: "flex",
     alignItems: "center",
-    fontSize: "14px",
-    fontWeight: "bold",
+  },
+
+  // 호버 효과 스타일 추가
+  personalizeButtonHover: {
+    background: "#007BFF",
+    transform: "scale(1.05)",
+    boxShadow: "0px 6px 8px rgba(0, 0, 0, 0.2)",
   },
   plusIcon: {
     fontSize: "18px",
