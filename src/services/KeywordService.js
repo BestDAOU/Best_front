@@ -16,8 +16,8 @@ export const extractKeywordsFromServer = async (message) => {
       message,
     });
 
-    // 서버에서 키워드 배열 반환 (["keyword1", "keyword2", ...])
-    return response.data.keywords;
+    // 서버에서 단일 키워드 반환 (문자열)
+    return response.data.keyword;
   } catch (error) {
     console.error("키워드 추출 서비스 오류:", error);
     throw new Error("키워드 추출에 실패했습니다.");
