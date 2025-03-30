@@ -35,47 +35,25 @@ const ContactList = ({
 
   const [activeGroups, setActiveGroups] = useState([]); // 여러 그룹 선택을 위한 배열
 
+  // This part correctly sets up the active groups
   const toggleGroup = (groupName) => {
-    const groupContacts = contacts.filter((c) => c.group === groupName);
-
-    const isAlreadySelected = groupContacts.every((gc) =>
-      selectedContacts.some((sc) => sc.id === gc.id)
-    );
-
-    if (isAlreadySelected) {
-      // 선택 해제
+    if (activeGroups.includes(groupName)) {
+      // 그룹 선택 해제
+      setActiveGroups((prev) => prev.filter((g) => g !== groupName));
+      // 해당 그룹의 선택된 연락처도 해제
       setSelectedContacts((prev) =>
         prev.filter((sc) => sc.group !== groupName)
       );
-      // 🔽 여기 추가
-      setActiveGroups((prev) => prev.filter((g) => g !== groupName));
     } else {
-      // 선택 추가
-      setSelectedContacts((prev) => {
-        const newContacts = groupContacts.filter(
-          (gc) => !prev.some((sc) => sc.id === gc.id)
-        );
-        return [...prev, ...newContacts];
-      });
-
-      setConvertedTexts((prev) => {
-        const updated = { ...prev };
-        groupContacts.forEach((c) => {
-          if (!updated[c.id]) {
-            updated[c.id] = message;
-          }
-        });
-        return updated;
-      });
-
-      // 🔽 여기 추가
+      // 그룹 선택 추가
       setActiveGroups((prev) => [...prev, groupName]);
     }
   };
 
+  // 수정된 filteredContacts 로직 - 그룹이 선택되지 않았을 때 모든 연락처 표시
   const filteredContacts =
     activeGroups.length === 0
-      ? [] // 아무 그룹도 선택 안 했을 경우 비워줌
+      ? contacts // 아무 그룹도 선택 안 했을 경우 모든 연락처 표시
       : contacts.filter((contact) => activeGroups.includes(contact.group));
 
   const generateMessagesForSelectedContacts = () => {
@@ -284,16 +262,16 @@ const ContactList = ({
                   <FaPhone /> 전화번호
                 </span>
               </div>
-              {contacts.length > 0 ? (
-                contacts.map((contact) => (
+
+              {filteredContacts.length > 0 ? (
+                filteredContacts.map((contact) => (
                   <div
                     key={contact.id}
                     style={{
-                      ...styles.contactItem, // 행 색상 교차
+                      ...styles.contactItem,
                     }}
                   >
                     <div style={styles.contactInfo}>
-                      {/* <input type="checkbox" style={styles.checkbox} /> */}
                       <input
                         type="checkbox"
                         checked={selectedContacts.some(
@@ -437,7 +415,9 @@ const ContactList = ({
                   </div>
                 ))
               ) : (
-                <div style={styles.noData}>데이터가 없습니다.</div>
+                <div style={styles.noData}>
+                  선택한 그룹에 연락처가 없습니다.
+                </div>
               )}
             </div>
           </div>
