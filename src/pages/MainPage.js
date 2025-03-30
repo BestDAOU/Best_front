@@ -6,7 +6,6 @@ import React, { useState } from "react";
 import ContactList from "../components/ContactList";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/images/logo.png";
-import axios from "axios";
 import { DiFirebase } from "react-icons/di";
 import { sendMessages } from "../services/PpurioApiService";
 import SendAnimation from "../components/SendAnimation";
@@ -14,6 +13,7 @@ import Select from "react-select";
 import { format } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { extractKeywordsFromServer } from "../services/KeywordService";
 
 // 현재 시간을 기준으로 가장 가까운 5분 단위의 시간 계산
 const getInitialReserveTime = () => {
@@ -85,51 +85,6 @@ const MainPage = () => {
     setIsDatePickerOpen(false); // 선택하면 닫힘
   };
 
-  // 메시지에서 키워드를 추출하는 함수
-  const extractKeywords = async (message) => {
-    try {
-      const prompt = `
-        Please extract one single keyword in English from the following message that can be used for image generation.
-
-        메시지: ${message}
-
-        키워드:
-      `;
-
-      const response = await axios.post(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          model: "gpt-4",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are an NLP expert. Extract exactly one relevant keyword in English from the provided message that can be used for image generation. The keyword must be concise and relevant.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          max_tokens: 100,
-          temperature: 0.5,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-          },
-        }
-      );
-
-      const keywords = response.data.choices[0].message.content.trim();
-      return keywords.split(",").map((keyword) => keyword.trim());
-    } catch (err) {
-      console.error(err);
-      return [];
-    }
-  };
-
   const handleImageGeneration = async () => {
     if (!message.trim()) {
       alert("메시지를 입력하세요.");
@@ -137,9 +92,12 @@ const MainPage = () => {
     }
 
     try {
-      const extractedKeywords = await extractKeywords(message);
+      setIsLoading(true); // 로딩 상태 활성화
 
-      if (extractedKeywords.length === 0) {
+      // 서버 API를 호출하여 키워드 추출
+      const extractedKeywords = await extractKeywordsFromServer(message);
+
+      if (!extractedKeywords || extractedKeywords.length === 0) {
         alert("키워드를 추출하지 못했습니다. 메시지를 확인해주세요.");
         return;
       }
@@ -147,6 +105,7 @@ const MainPage = () => {
       const keyword = extractedKeywords[0];
       console.log("추출된 키워드:", keyword);
 
+      // 이미지 생성 페이지로 이동
       navigate("/image-generation", { state: { message, keyword } });
     } catch (error) {
       console.error("키워드 추출 중 오류 발생:", error);
