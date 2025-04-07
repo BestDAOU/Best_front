@@ -704,4 +704,4 @@ const styles = {
 
 export default MainPage;
 
-//pr 적용 확인
+//pr 적용 확인2
