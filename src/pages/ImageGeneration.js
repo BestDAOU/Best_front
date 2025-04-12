@@ -1,4 +1,4 @@
-//src/pages/ImageGeneration.js
+// src/pages/ImageGeneration.js
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import LoadingAnimation from '../components/LoadingAnimation';
@@ -20,6 +20,11 @@ const ImageGeneration = () => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [generatedImages, setGeneratedImages] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Hover 상태 관리
+  const [isGenerateButtonHover, setIsGenerateButtonHover] = useState(false);
+  const [isUseButtonHover, setIsUseButtonHover] = useState(false);
+  const [hoverOption, setHoverOption] = useState(null);
 
   const translateCategory = (category, selection) => {
     const translations = {
@@ -103,50 +108,118 @@ const ImageGeneration = () => {
   return (
     <div style={styles.container}>
       {isLoading && <LoadingAnimation />}
-      <div style={styles.row}>
-        <div style={styles.column}>
-        <h2>발송 목적 및 내용</h2>
-          <div style={styles.selectedKeyword}>
-            <h3>추출된 키워드:</h3>
-            <input
-              type="text"
-              value={keyword}
-              onChange={handleInputChange} // 키워드 수정 가능
-              style={styles.keywordInput}
-            />
+      <div style={styles.panelsContainer}>
+        {/* 왼쪽 패널: 발송 목적 및 내용 */}
+        <div style={styles.inputPanel}>
+          <div style={styles.inputTitleContainer}>
+            <h2 style={styles.inputTitle}>발송 목적 및 내용</h2>
           </div>
-          <div style={styles.textAreaContainer}>
-            <textarea 
-              placeholder="text 입력"
-              value={inputText}
-              readOnly // 텍스트 수정 불가능
-              style={styles.textArea}
-            />
-          </div>
-          <div style={styles.keywordContainer}>
-            <h3>주요 키워드 제시</h3>
-            <div style={styles.keywordButtons}>
-              <CategorySelector label="스타일" options={['사실적', '애니메이션', '일러스트', '픽셀 아트']} selected={style} onSelect={setStyle} />
-              <CategorySelector label="목적" options={['청첩장', '축하 문자', '안부 문자', '소식 전달']} selected={subject} onSelect={setSubject} />
-              <CategorySelector label="감정/분위기" options={['행복한', '슬픈', '차분한', '에너지 넘치는']} selected={emotion} onSelect={setEmotion} />
-              <CategorySelector label="배경" options={['실내', '야외', '도시', '해변']} selected={background} onSelect={setBackground} />
-            </div>
-          </div>
-          <button onClick={handleSubmit} style={styles.generateButton} disabled={isButtonDisabled}>
-            {isButtonDisabled ? '생성 중...' : '이미지 생성'}
-          </button>
-        </div>
-        <div style={styles.column}>
-          <h2>생성결과</h2>
-          <div style={styles.imageDisplay}>
-            {generatedImages.length > 0 ? (
-              <ImageGallery
-                items={generatedImages}
-                onSlide={(currentIndex) => setCurrentImageIndex(currentIndex)}
+          <div style={styles.panelContent}>
+            <div style={styles.selectedKeyword}>
+              <h3 style={styles.subTitle}>추출된 키워드:</h3>
+              <input
+                type="text"
+                value={keyword}
+                onChange={handleInputChange}
+                style={styles.keywordInput}
               />
-            ) : (
-              <p>이미지를 생성하세요</p>
-            )}
+            </div>
+            
+            <div style={styles.textAreaContainer}>
+              <textarea 
+                placeholder="text 입력"
+                value={inputText}
+                readOnly
+                style={styles.textArea}
+              />
+            </div>
+            
+            <div style={styles.keywordContainer}>
+              <h3 style={styles.subTitle}>주요 키워드 제시</h3>
+              <div style={styles.categoriesContainer}>
+                <div style={styles.categoryColumn}>
+                  <CategorySelector 
+                    label="스타일" 
+                    options={['사실적', '애니메이션', '일러스트', '픽셀 아트']} 
+                    selected={style} 
+                    onSelect={setStyle}
+                    hoverOption={hoverOption}
+                    setHoverOption={setHoverOption}
+                    category="style"
+                  />
+                  <CategorySelector 
+                    label="목적" 
+                    options={['청첩장', '축하 문자', '안부 문자', '소식 전달']} 
+                    selected={subject} 
+                    onSelect={setSubject}
+                    hoverOption={hoverOption}
+                    setHoverOption={setHoverOption}
+                    category="subject"
+                  />
+                </div>
+                <div style={styles.categoryColumn}>
+                  <CategorySelector 
+                    label="감정/분위기" 
+                    options={['행복한', '슬픈', '차분한', '에너지 넘치는']} 
+                    selected={emotion} 
+                    onSelect={setEmotion}
+                    hoverOption={hoverOption}
+                    setHoverOption={setHoverOption}
+                    category="emotion"
+                  />
+                  <CategorySelector 
+                    label="배경" 
+                    options={['실내', '야외', '도시', '해변']} 
+                    selected={background} 
+                    onSelect={setBackground}
+                    hoverOption={hoverOption}
+                    setHoverOption={setHoverOption}
+                    category="background"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <button
+              onClick={handleSubmit}
+              onMouseEnter={() => setIsGenerateButtonHover(true)}
+              onMouseLeave={() => setIsGenerateButtonHover(false)}
+              style={{
+                ...styles.actionButton,
+                ...(isGenerateButtonHover && !isButtonDisabled ? styles.buttonHover : {})
+              }}
+              disabled={isButtonDisabled}
+            >
+              {isButtonDisabled ? '생성 중...' : '이미지 생성'}
+            </button>
+          </div>
+        </div>
+
+        {/* 오른쪽 패널: 생성 결과 */}
+        <div style={styles.resultPanel}>
+          <div style={styles.resultTitleWithArrow}>
+            <div style={styles.arrow}></div>
+            <h2 style={styles.resultTitle}>생성 결과</h2>
+          </div>
+          <div style={styles.panelContent}>
+            <div style={styles.imageDisplay}>
+              {generatedImages.length > 0 ? (
+                <ImageGallery
+                  items={generatedImages}
+                  onSlide={(currentIndex) => setCurrentImageIndex(currentIndex)}
+                  showPlayButton={false}
+                  showFullscreenButton={false}
+                  showNav={true}
+                  showThumbnails={true}
+                  thumbnailPosition="bottom"
+                />
+              ) : (
+                <div style={styles.noImageMessage}>
+                  <p>이미지를 생성하세요</p>
+                </div>
+              )}
+            </div>
+            
             <button
               onClick={() => {
                 if (generatedImages.length > 0) {
@@ -156,7 +229,15 @@ const ImageGeneration = () => {
                   alert('이미지를 먼저 생성해주세요.');
                 }
               }}
-              style={styles.useButton}
+              onMouseEnter={() => setIsUseButtonHover(true)}
+              onMouseLeave={() => setIsUseButtonHover(false)}
+              style={{
+                ...styles.actionButton,
+                backgroundColor: generatedImages.length > 0 ? '#4A90E2' : '#ccc',
+                cursor: generatedImages.length > 0 ? 'pointer' : 'not-allowed',
+                ...(isUseButtonHover && generatedImages.length > 0 ? styles.buttonHover : {})
+              }}
+              disabled={generatedImages.length === 0}
             >
               이미지 사용하기
             </button>
@@ -167,22 +248,39 @@ const ImageGeneration = () => {
   );
 };
 
-const CategorySelector = ({ label, options, selected, onSelect }) => (
+const CategorySelector = ({ label, options, selected, onSelect, hoverOption, setHoverOption, category }) => (
   <div style={styles.category}>
-    <h3 style={styles.categoryLabel}>{label}</h3>
-    {options.map((option) => (
-      <button
-        key={option}
-        onClick={() => onSelect(option)}
-        style={{
-          ...styles.keywordButton,
-          backgroundColor: selected === option ? '#007bff' : '#e1e5f2',
-          color: selected === option ? 'white' : 'black',
-        }}
-      >
-        {option}
-      </button>
-    ))}
+    <h4 style={styles.categoryLabel}>{label}</h4>
+    <div style={styles.optionsContainer}>
+      {options.map((option) => {
+        const isSelected = selected === option;
+        const isHovered = hoverOption === `${category}-${option}`;
+        
+        // 옵션 버튼 호버 스타일
+        const optionHoverStyle = isHovered ? {
+          transform: "translateY(-2px)",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+          backgroundColor: isSelected ? "#3980d3" : "#d0d6e6"
+        } : {};
+        
+        return (
+          <button
+            key={option}
+            onClick={() => onSelect(option)}
+            onMouseEnter={() => setHoverOption(`${category}-${option}`)}
+            onMouseLeave={() => setHoverOption(null)}
+            style={{
+              ...styles.optionButton,
+              backgroundColor: isSelected ? '#4A90E2' : '#e1e5f2',
+              color: isSelected ? 'white' : '#333',
+              ...optionHoverStyle
+            }}
+          >
+            {option}
+          </button>
+        );
+      })}
+    </div>
   </div>
 );
 
@@ -192,89 +290,199 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     padding: '20px',
+    fontFamily: 'Arial, sans-serif',
+    // marginTop: '80px', // 헤더 높이 고려
+    // backgroundColor: '#f5f5f5',
+    minHeight: 'calc(100vh - 80px)', // 전체 높이에서 헤더 높이 빼기
   },
-  row: {
+  panelsContainer: {
     display: 'flex',
-    justifyContent: 'space-between',
     width: '100%',
-    maxWidth: '900px',
-    marginBottom: '20px',
+    maxWidth: '1200px',
+    gap: '20px',
+    height: 'calc(100vh - 140px)', // 컨테이너 높이 지정
   },
-  column: {
+  inputPanel: {
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    width: '45%',
-  },
-  textArea: {
-    width: '100%',
-    height: '150px',
-    marginTop: '10px',
-    padding: '10px',
     borderRadius: '8px',
-    border: '1px solid #ccc',
-    fontSize: '16px',
+    backgroundColor: 'white',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    overflow: 'hidden',
+    border: '1px solid #e0e0e0',
   },
-  keywordContainer: {
-    marginTop: '20px',
-  },
-  keywordButtons: {
+  resultPanel: {
+    flex: 1,
     display: 'flex',
-    flexWrap: 'wrap',
-    gap: '10px',
-    marginTop: '10px',
-  },
-  keywordButton: {
-    padding: '8px 16px',
-    fontSize: '14px',
-    cursor: 'pointer',
-    border: 'none',
+    flexDirection: 'column',
     borderRadius: '8px',
-    backgroundColor: '#e1e5f2',
-    margin: '5px',
+    backgroundColor: 'white',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    overflow: 'hidden',
+    border: '1px solid #e0e0e0',
+    position: 'relative', // 화살표의 상대 위치 설정을 위해
   },
-  generateButton: {
-    marginTop: '20px',
-    padding: '10px 20px',
+  inputTitleContainer: {
+    backgroundColor: '#f5f7fa',
+    padding: '15px 20px',
+    borderBottom: '1px solid #e5e5e5',
+  },
+  resultTitleWithArrow: {
+    backgroundColor: '#4c5873',
+    height: '50px',
+    display: 'flex',
+    alignItems: 'center',
+    paddingLeft: '30px', // 화살표 공간 확보
+    position: 'relative', // 화살표의 상대 위치 설정을 위해
+    borderBottom: '1px solid #e5e5e5',
+  },
+  arrow: {
+    position: 'absolute',
+    left: '0',
+    top: '0',
+    width: '0',
+    height: '0',
+    borderTop: '25px solid transparent', // 위쪽 삼각형 (title 높이의 절반)
+    borderBottom: '25px solid transparent', // 아래쪽 삼각형 (title 높이의 절반)
+    borderLeft: '10px solid #f5f5f5', // 배경색과 같은 색상으로 왼쪽 화살표
+    marginLeft: '-10px', // 왼쪽으로 삼각형 크기만큼 이동
+  },
+  inputTitle: {
+    margin: 0,
+    fontSize: '18px',
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  resultTitle: {
+    margin: 0,
+    fontSize: '18px',
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  panelContent: {
+    padding: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    overflowY: 'auto', // 내용이 많을 경우 스크롤
+  },
+  subTitle: {
     fontSize: '16px',
-    cursor: 'pointer',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
+    fontWeight: 'bold',
+    marginBottom: '10px',
+    color: '#333',
   },
   selectedKeyword: {
-    marginBottom: '20px',
+    marginBottom: '15px',
     padding: '10px',
     backgroundColor: '#f4f4f9',
     borderRadius: '8px',
     border: '1px solid #ddd',
-    fontSize: '16px',
-    color: '#333',
-    textAlign: 'center',
-  },
-  useButton: {
-    padding: '12px 24px',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    backgroundColor: '#4A90E2',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '8px',
-    alignSelf: 'center',
-    marginTop: '20px',
   },
   keywordInput: {
-    width: '50%',
+    width: '100%',
     padding: '8px',
-    fontSize: '16px',
+    fontSize: '14px',
     border: '1px solid #ccc',
-    borderRadius: '8px',
-    marginTop: '10px',
-    textAlign: 'center',
+    borderRadius: '4px',
+    marginTop: '5px',
+    boxSizing: 'border-box',
   },
   textAreaContainer: {
+    marginBottom: '15px',
+  },
+  textArea: {
+    width: '100%',
+    height: '180px', // 높이 증가
+    padding: '10px',
+    borderRadius: '4px',
+    border: '1px solid #ddd',
+    fontSize: '14px',
+    resize: 'none',
+    boxSizing: 'border-box',
+    lineHeight: '1.5',
+    overflowY: 'auto',
+  },
+  keywordContainer: {
+    marginBottom: '15px',
+  },
+  categoriesContainer: {
+    display: 'flex',
+    gap: '15px',
+    marginTop: '10px',
+  },
+  categoryColumn: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '15px',
+  },
+  category: {
+    marginBottom: '5px',
+  },
+  categoryLabel: {
+    fontSize: '14px',
+    fontWeight: 'bold',
+    marginBottom: '5px',
+    color: '#555',
+  },
+  optionsContainer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+  },
+  optionButton: {
+    width: '96px', // 고정 너비 설정
+    padding: '8px 10px',
+    fontSize: '13px',
+    cursor: 'pointer',
+    border: 'none',
+    borderRadius: '4px',
+    transition: 'all 0.2s ease',
+    fontWeight: '500',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+  },
+  actionButton: {
+    padding: '12px 20px',
+    fontSize: '16px',
+    cursor: 'pointer',
+    color: 'white',
+    backgroundColor: '#4A90E2',
+    fontWeight: 'bold',
+    border: 'none',
+    borderRadius: '4px',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    width: '100%',
+    marginTop: 'auto', // 버튼을 컨텐츠 영역 하단에 배치
+    marginBottom: '10px',
+  },
+  buttonHover: {
+    transform: 'translateY(-3px)',
+    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
+    backgroundColor: '#3980d3',
+  },
+  imageDisplay: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: '4px',
+    overflow: 'hidden',
+    background: '#f9f9f9',
     marginBottom: '20px',
+    minHeight: '400px', // 이미지 디스플레이 최소 높이 설정
+  },
+  noImageMessage: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '300px',
+    width: '100%',
+    color: '#999',
+    fontSize: '16px',
   },
 };
 
