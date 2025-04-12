@@ -1,18 +1,24 @@
+// //src/pages/MessageGeneration.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoadingAnimation from "../components/LoadingAnimation";
 import MessageGenerateAnimation from "../components/MessageGenerateAnimation";
 import Message2Animation from "../components/MessageAnimation";
-import MessageGenerationService from "../services/MessageGenerationService"; // 서비스 불러오기
+import MessageGenerationService from "../services/MessageGenerationService";
 
 // 메시지 생성 페이지 컴포넌트
 const MessageGenerationPage = () => {
   const [inputText, setInputText] = useState("");
   const [generatedMessage, setGeneratedMessage] = useState("");
-  const [selectedKeywords, setSelectedKeywords] = useState([]); // 선택된 키워드 상태
-  const [isLoading, setIsLoading] = useState(false); // 로딩 상태
-  const [error, setError] = useState(null); // 에러 상태
+  const [selectedKeywords, setSelectedKeywords] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Hover 상태 관리를 위한 state
+  const [hoverKeyword, setHoverKeyword] = useState(null);
+  const [isGenerateButtonHover, setIsGenerateButtonHover] = useState(false);
+  const [isUseButtonHover, setIsUseButtonHover] = useState(false);
 
   const navigate = useNavigate();
 
@@ -42,7 +48,6 @@ const MessageGenerationPage = () => {
     setError(null);
 
     try {
-      // 백엔드 API를 통해 메시지 생성 요청
       const message = await MessageGenerationService.generateMessage(
         inputText,
         selectedKeywords
@@ -58,15 +63,15 @@ const MessageGenerationPage = () => {
   };
 
   const handleUseMessage = () => {
-    navigate("/", { state: { message: generatedMessage } }); // generatedMessage를 state로 전달
+    navigate("/", { state: { message: generatedMessage } });
   };
 
   const toggleKeywordSelection = (keyword) => {
     setSelectedKeywords(
       (prevSelected) =>
         prevSelected.includes(keyword)
-          ? prevSelected.filter((k) => k !== keyword) // 이미 선택된 키워드이면 제거
-          : [...prevSelected, keyword] // 선택되지 않은 키워드이면 추가
+          ? prevSelected.filter((k) => k !== keyword)
+          : [...prevSelected, keyword]
     );
   };
 
@@ -88,27 +93,45 @@ const MessageGenerationPage = () => {
           <div style={styles.keywordContainer}>
             <h3>주요 키워드 제시</h3>
             <div style={styles.keywordButtons}>
-              {keywords.map((keyword) => (
-                <button
-                  key={keyword}
-                  onClick={() => toggleKeywordSelection(keyword)}
-                  style={{
-                    ...styles.keywordButton,
-                    backgroundColor: selectedKeywords.includes(keyword)
-                      ? "#4A90E2"
-                      : "#e1e5f2", // 선택 시 색상 변화
-                  }}
-                >
-                  {keyword}
-                </button>
-              ))}
+              {keywords.map((keyword) => {
+                const isSelected = selectedKeywords.includes(keyword);
+                const isHovered = hoverKeyword === keyword;
+                
+                // 키워드 버튼 호버 스타일
+                const keywordHoverStyle = isHovered ? {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+                  backgroundColor: isSelected ? "#3980d3" : "#d0d6e6"
+                } : {};
+                
+                return (
+                  <button
+                    key={keyword}
+                    onClick={() => toggleKeywordSelection(keyword)}
+                    onMouseEnter={() => setHoverKeyword(keyword)}
+                    onMouseLeave={() => setHoverKeyword(null)}
+                    style={{
+                      ...styles.keywordButton,
+                      backgroundColor: isSelected ? "#4A90E2" : "#e1e5f2",
+                      ...keywordHoverStyle
+                    }}
+                  >
+                    {keyword}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* 메시지 생성 버튼 */}
           <button
             onClick={handleGenerateMessage}
-            style={styles.generateButton}
+            onMouseEnter={() => setIsGenerateButtonHover(true)}
+            onMouseLeave={() => setIsGenerateButtonHover(false)}
+            style={{
+              ...styles.generateButton,
+              ...(isGenerateButtonHover && !isLoading ? styles.buttonHover : {})
+            }}
             disabled={isLoading}
           >
             {isLoading ? "생성 중..." : "메시지 생성"}
@@ -130,10 +153,13 @@ const MessageGenerationPage = () => {
           {/* 메시지 사용 버튼 */}
           <button
             onClick={handleUseMessage}
+            onMouseEnter={() => setIsUseButtonHover(true)}
+            onMouseLeave={() => setIsUseButtonHover(false)}
             style={{
               ...styles.useButton,
               backgroundColor: generatedMessage ? "#4A90E2" : "#ccc",
               cursor: generatedMessage ? "pointer" : "not-allowed",
+              ...(isUseButtonHover && generatedMessage ? styles.buttonHover : {})
             }}
             disabled={!generatedMessage}
           >
@@ -153,51 +179,69 @@ const styles = {
     alignItems: "center",
     padding: "20px",
     fontFamily: "Arial, sans-serif",
+    marginTop: "80px", // 헤더 높이 고려
   },
   row: {
     display: "flex",
     justifyContent: "space-between",
     width: "100%",
-    maxWidth: "900px",
+    maxWidth: "1000px", // 약간 더 넓게 조정
     marginBottom: "20px",
+    gap: "30px", // 좌우 열 사이의 간격
   },
   column: {
     display: "flex",
     flexDirection: "column",
-    width: "45%",
+    width: "50%", // 동일한 너비로 설정 (마진 제외)
+  },
+  sectionTitle: {
+    fontSize: "20px",
+    fontWeight: "bold",
+    marginBottom: "15px",
+    color: "#333",
   },
   textArea: {
     width: "100%",
     height: "350px",
-    marginTop: "10px",
     padding: "10px",
     borderRadius: "8px",
     border: "1px solid #4A90E2",
     fontSize: "18px",
-    fontFamily: "'Arial', sans-serif", // 폰트 설정
-    fontWeight: "bold", //bold로 설정
-    resize: "none", // 크기 조절 불가능
+    fontFamily: "'Arial', sans-serif",
+    fontWeight: "bold",
+    resize: "none",
+    boxSizing: "border-box", // 패딩이 너비에 포함되도록
   },
-  keywordContainer: {
+  keywordSection: {
     marginTop: "20px",
+    width: "100%", // 전체 너비 사용
+  },
+  keywordTitle: {
+    fontSize: "18px",
+    fontWeight: "bold",
+    marginBottom: "10px",
+    color: "#333",
   },
   keywordButtons: {
     display: "flex",
     flexWrap: "wrap",
     gap: "10px",
     marginTop: "10px",
+    justifyContent: "flex-start", // 왼쪽 정렬
   },
   keywordButton: {
-    marginLeft: "7px",
-    padding: "10px 16px",
+    minWidth: "80px", // 모든 버튼의 최소 너비 통일
+    height: "40px", // 모든 버튼의 높이 통일
+    padding: "0 16px",
     fontSize: "14px",
     fontWeight: "500",
     cursor: "pointer",
     border: "1px solid #4A90E2",
     borderRadius: "20px",
-    backgroundColor: "#FFFFFF",
-    color: "black",
-    transition: "all 0.3s",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease",
     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
   },
   generateButton: {
@@ -207,40 +251,38 @@ const styles = {
     cursor: "pointer",
     color: "white",
     backgroundColor: "#4A90E2",
+    fontWeight: "bold",
     border: "none",
     borderRadius: "8px",
-    transition: "background-color 0.3s",
+    transition: "all 0.2s ease", // 모든 속성에 트랜지션 적용
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+    width: "100%", // 전체 너비
   },
   useButton: {
+    marginTop: "20px",
     padding: "10px 20px",
     fontSize: "16px",
     cursor: "pointer",
+    color: "#fff",
     backgroundColor: "#4A90E2",
-    color: "#fff", // 글자 색 하얀색
+    fontWeight: "bold",
     border: "none",
     borderRadius: "8px",
-    alignSelf: "center",
-    marginTop: "20px",
-    transition: "background-color 0.3s",
+    transition: "all 0.2s ease", // 모든 속성에 트랜지션 적용
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+    width: "100%", // 전체 너비
+  },
+  // 버튼 호버 효과 스타일
+  buttonHover: {
+    transform: "translateY(-3px)",
+    boxShadow: "0 6px 12px rgba(0, 0, 0, 0.2)",
+    backgroundColor: "#3980d3",
   },
   errorText: {
     color: "red",
     marginTop: "10px",
-  },
-
-  // hover 효과 추가
-  keywordButtonHover: {
-    backgroundColor: "blue", // hover 시 색상 변화
-  },
-  generateButtonHover: {
-    backgroundColor: "blue",
-  },
-  useButtonHover: {
-    backgroundColor: "blue",
+    textAlign: "center",
   },
 };
-
-// 추가적인 hover 스타일을 적용하려면 아래와 같은 방식으로 스타일을 개선할 수 있습니다.
-// 버튼에 hover 효과를 넣고, 버튼 색상에 대한 일관성을 유지할 수 있습니다.
 
 export default MessageGenerationPage;
