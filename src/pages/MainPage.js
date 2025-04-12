@@ -564,15 +564,6 @@ const MainPage = () => {
           </button>
         </div>
       </div>
-
-      <div style={styles.container}>
-        {/* <button
-          style={styles.chatbotButton}
-          onClick={() => navigate("/chatbot")}
-        >
-          챗봇 사용하기
-        </button> */}
-      </div>
     </div>
   );
 };
