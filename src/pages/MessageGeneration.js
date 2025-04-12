@@ -11,7 +11,7 @@ const MessageGenerationPage = () => {
   const [selectedKeywords, setSelectedKeywords] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   // Hover 상태 관리를 위한 state
   const [hoverKeyword, setHoverKeyword] = useState(null);
   const [isGenerateButtonHover, setIsGenerateButtonHover] = useState(false);
@@ -60,15 +60,14 @@ const MessageGenerationPage = () => {
   };
 
   const handleUseMessage = () => {
-    navigate("/", { state: { message: generatedMessage } });
+    navigate("/main", { state: { message: generatedMessage } });
   };
 
   const toggleKeywordSelection = (keyword) => {
-    setSelectedKeywords(
-      (prevSelected) =>
-        prevSelected.includes(keyword)
-          ? prevSelected.filter((k) => k !== keyword)
-          : [...prevSelected, keyword]
+    setSelectedKeywords((prevSelected) =>
+      prevSelected.includes(keyword)
+        ? prevSelected.filter((k) => k !== keyword)
+        : [...prevSelected, keyword]
     );
   };
 
@@ -96,14 +95,16 @@ const MessageGenerationPage = () => {
                 {keywords.map((keyword) => {
                   const isSelected = selectedKeywords.includes(keyword);
                   const isHovered = hoverKeyword === keyword;
-                  
+
                   // 키워드 버튼 호버 스타일
-                  const keywordHoverStyle = isHovered ? {
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
-                    backgroundColor: isSelected ? "#3980d3" : "#d0d6e6"
-                  } : {};
-                  
+                  const keywordHoverStyle = isHovered
+                    ? {
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+                        backgroundColor: isSelected ? "#3980d3" : "#d0d6e6",
+                      }
+                    : {};
+
                   return (
                     <button
                       key={keyword}
@@ -113,7 +114,7 @@ const MessageGenerationPage = () => {
                       style={{
                         ...styles.keywordButton,
                         backgroundColor: isSelected ? "#4A90E2" : "#e1e5f2",
-                        ...keywordHoverStyle
+                        ...keywordHoverStyle,
                       }}
                     >
                       {keyword}
@@ -130,7 +131,9 @@ const MessageGenerationPage = () => {
               onMouseLeave={() => setIsGenerateButtonHover(false)}
               style={{
                 ...styles.actionButton,
-                ...(isGenerateButtonHover && !isLoading ? styles.buttonHover : {})
+                ...(isGenerateButtonHover && !isLoading
+                  ? styles.buttonHover
+                  : {}),
               }}
               disabled={isLoading}
             >
@@ -154,7 +157,7 @@ const MessageGenerationPage = () => {
               value={generatedMessage}
               readOnly
             />
-            
+
             {/* 메시지 사용 버튼 */}
             <button
               onClick={handleUseMessage}
@@ -164,7 +167,9 @@ const MessageGenerationPage = () => {
                 ...styles.actionButton,
                 backgroundColor: generatedMessage ? "#4A90E2" : "#ccc",
                 cursor: generatedMessage ? "pointer" : "not-allowed",
-                ...(isUseButtonHover && generatedMessage ? styles.buttonHover : {})
+                ...(isUseButtonHover && generatedMessage
+                  ? styles.buttonHover
+                  : {}),
               }}
               disabled={!generatedMessage}
             >
@@ -274,7 +279,7 @@ const styles = {
     justifyContent: "flex-start",
   },
   keywordButton: {
-    width: "83px", 
+    width: "83px",
     height: "40px",
     padding: "0 16px",
     fontSize: "14px",
