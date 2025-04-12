@@ -125,7 +125,7 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#ffffff",
-    height: "80px",
+    height: "65px",
     padding: "0 30px", // Increased padding from 20px to 30px
     position: "fixed",
     width: "calc(100% - 60px)", // Adjusted width to account for padding
