@@ -1,8 +1,18 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import logo from "../assets/images/logo.png"; // 로고 이미지 경로
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/images/logo.png";
+import { useUser } from "../store/UserContext";
 
 const Header = () => {
+  const { user, setUser } = useUser();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    setUser(null); // 유저 정보 제거
+    alert("로그아웃 되었습니다.");
+    navigate("/"); // 홈으로 이동
+  };
+
   return (
     <header style={styles.header}>
       {/* 왼쪽: 로고 */}
@@ -15,9 +25,25 @@ const Header = () => {
       {/* 가운데: 브랜드 이름 */}
       <h1 style={styles.brand}>BESTDAOU</h1>
 
-      {/* 오른쪽: 사용자 이름 */}
+      {/* 오른쪽: 사용자 정보 및 버튼 */}
       <div style={styles.rightSection}>
-        <span style={styles.userName}>최고다우님</span>
+        {user ? (
+          <>
+            <span style={styles.userName}>{user.name}님</span>
+            <button onClick={handleLogout} style={styles.logoutButton}>
+              로그아웃
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" style={styles.loginButton}>
+              로그인
+            </Link>
+            <Link to="/signup" style={styles.signupButton}>
+              회원가입
+            </Link>
+          </>
+        )}
       </div>
     </header>
   );
@@ -28,14 +54,14 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#ffffff", // 흰색 배경
+    backgroundColor: "#ffffff",
     height: "80px",
     padding: "0 20px",
     position: "fixed",
     width: "100%",
     top: 0,
     zIndex: 1000,
-    boxShadow: "0 1px 5px rgba(0, 0, 0, 0.1)", // 부드러운 그림자 추가
+    boxShadow: "0 1px 5px rgba(0, 0, 0, 0.1)",
   },
   leftSection: {
     display: "flex",
@@ -51,23 +77,45 @@ const styles = {
   brand: {
     fontSize: "36px",
     fontWeight: "bold",
-    color: "#4A90E2", // 부드러운 파란색으로 브랜드 이름 설정
+    color: "#4A90E2",
     marginLeft: "90px",
   },
   rightSection: {
     display: "flex",
     alignItems: "center",
+    gap: "15px",
   },
   userName: {
-    fontSize: "28px", // 약간 작은 크기로 세련되게
-    fontWeight: "500", // 부드러운 굵기로 조정
-    color: "#333333", // 약간 차분한 어두운 회색
-    whiteSpace: "nowrap", // 한 줄 유지
-    marginRight: "70px", // 여백 유지
-    fontFamily: "'Poppins', 'Noto Sans KR', sans-serif", // 세련된 Google Fonts 조합
-    letterSpacing: "0.8px", // 자간 약간 늘림
-    lineHeight: "1.2", // 줄 간격 조정
-    textShadow: "1px 1px 2px rgba(0, 0, 0, 0.1)", // 약간의 그림자 효과
+    fontSize: "20px",
+    fontWeight: "500",
+    color: "#333",
+    fontFamily: "'Poppins', 'Noto Sans KR', sans-serif",
+    letterSpacing: "0.8px",
+  },
+  logoutButton: {
+    backgroundColor: "#4A90E2",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    padding: "8px 14px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  loginButton: {
+    backgroundColor: "#4A90E2",
+    color: "white",
+    padding: "10px 20px",
+    borderRadius: "8px",
+    textDecoration: "none",
+    fontWeight: "bold",
+  },
+  signupButton: {
+    backgroundColor: "#4A90E2",
+    color: "white",
+    padding: "10px 20px",
+    borderRadius: "8px",
+    textDecoration: "none",
+    fontWeight: "bold",
   },
 };
 
