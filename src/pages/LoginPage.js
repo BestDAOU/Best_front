@@ -15,6 +15,7 @@ const LoginPage = () => {
       const userInfo = response.data;
 
       setUser(userInfo); // 전역 상태에 저장
+      localStorage.setItem("memberId", userInfo.id); // 또는 userInfo.memberId
       alert("로그인 성공!");
       navigate("/"); // 메인으로 이동
     } catch (err) {

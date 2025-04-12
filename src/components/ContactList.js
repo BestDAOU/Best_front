@@ -13,14 +13,15 @@ import PersonalizationModal from "./PersonalizationModal"; // 모달 컴포넌�
 import { useNavigate } from "react-router-dom"; // 페이지 이동을 위한 useNavigate 사용
 import tonesobj from "../data/tones.json"; // JSON 파일 import
 import { useSelector } from "react-redux";
+import { getFriendsByMemberId } from "../services/FriendsService"; // ✅ DB API 호출
 
 const ContactList = ({
   message,
-  setMessage,
   convertedTexts,
   setConvertedTexts,
   selectedContacts,
   setSelectedContacts,
+  memberId, // ✅ 이걸 꼭 전달해야 함
 }) => {
   const tones = tonesobj;
   const navigate = useNavigate(); // navigate 훅 선언
@@ -31,7 +32,32 @@ const ContactList = ({
   const [editData, setEditData] = useState({ tag: "", memo: "", tone: "" });
 
   const contactsobj = useSelector((state) => state.contacts); // Redux에서 상태 가져오기
-  const [contacts, setContacts] = useState(contactsobj);
+  const [contacts, setContacts] = useState([]);
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const response = await getFriendsByMemberId(memberId);
+        console.log("📦 불러온 contacts:", response.data);
+        const mappedContacts = response.data.map((item) => ({
+          id: item.id,
+          name: item.friendName,
+          phone: item.friendPhone,
+          email: item.friendEmail,
+          tag: item.features,     // features → tag
+          tone: item.tones,
+          memo: item.memos,
+          group: item.group || "기본", // group 필드 없을 경우 대비
+        }));
+        setContacts(mappedContacts);
+      } catch (error) {
+        console.error("연락처 불러오기 오류:", error);
+      }
+    };
+
+    if (memberId) {
+      fetchContacts();
+    }
+  }, [memberId]);
 
   const [activeGroups, setActiveGroups] = useState([]); // 여러 그룹 선택을 위한 배열
 
@@ -225,9 +251,9 @@ const ContactList = ({
                 style={
                   isPersonalizeHovered
                     ? {
-                        ...styles.personalizeButton,
-                        ...styles.personalizeButtonHover,
-                      }
+                      ...styles.personalizeButton,
+                      ...styles.personalizeButtonHover,
+                    }
                     : styles.personalizeButton
                 }
                 onClick={openModal}
@@ -241,9 +267,9 @@ const ContactList = ({
                 style={
                   isAddContactHovered
                     ? {
-                        ...styles.personalizeButton,
-                        ...styles.personalizeButtonHover,
-                      }
+                      ...styles.personalizeButton,
+                      ...styles.personalizeButtonHover,
+                    }
                     : styles.personalizeButton
                 }
                 onClick={() => navigate("/contact-form")}
@@ -265,7 +291,7 @@ const ContactList = ({
               //추가
               setContacts={setContacts} // 추가
               message={message}
-              //
+            //
             />
           )}
 

@@ -11,10 +11,7 @@ const PersonalizationModal = ({
   closeModal,
   convertedTexts,
   setConvertedTexts,
-  onComplete,
   message,
-  //추가
-  setContacts, // 추가
   //
 }) => {
   // 톤 선택 버튼을 렌더링하기 위한 톤 목록
@@ -169,20 +166,6 @@ const PersonalizationModal = ({
       ...prev,
       [currentContact.id]: message, // 현재 연락처의 텍스트를 기본 메시지로 변경
     }));
-  };
-
-  const handleToneFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const content = e.target.result;
-      console.log("업로드된 파일 내용:", content); // ✅ 콘솔에 출력
-    };
-
-    reader.readAsText(file);
   };
 
   return (

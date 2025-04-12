@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addContact } from "../store/contactsSlice";
 import { useNavigate } from "react-router-dom";
 import tones from "../data/tones.json"; // tones.json import
+import { addFriend, getFriendsByMemberId } from "../services/FriendsService";
 
-const ContactForm = () => {
+const ContactForm = ({ memberId }) => {
   const [contactList, setContactList] = useState([]);
   const [contact, setContact] = useState({
     name: "",
@@ -23,6 +24,31 @@ const ContactForm = () => {
   const [expandedMemos, setExpandedMemos] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const response = await getFriendsByMemberId(memberId);
+        const serverContacts = response.data.map((friend) => ({
+          name: friend.friendName,
+          phone: friend.friendPhone,
+          email: friend.friendEmail,
+          tag: friend.features,
+          memo: friend.memos,
+          tone: friend.tones,
+          group: friend.groupName,
+          nickname: friend.relationType,
+          profile: "https://via.placeholder.com/40",
+        }));
+        setContactList(serverContacts);
+      } catch (error) {
+        console.error("서버에서 연락처를 불러오는 중 오류 발생:", error);
+      }
+    };
+
+    fetchContacts();
+  }, [memberId]);
+
 
   // 특징 더보기/접기 토글
   const toggleExpandTag = (index) => {
@@ -91,16 +117,35 @@ const ContactForm = () => {
   };
 
   // 확인 버튼 핸들러: Redux에 저장 후 메인 페이지로 이동
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (contactList.length === 0) {
       alert("추가된 연락처가 없습니다.");
       return;
     }
-    contactList.forEach((contact) => dispatch(addContact(contact))); // Redux에 저장
-    alert("연락처가 저장되었습니다!");
-    navigate("/");
-  };
 
+    try {
+      for (const contact of contactList) {
+        const payload = {
+          friendName: contact.name,
+          friendPhone: contact.phone,
+          friendEmail: contact.email,
+          features: contact.tag,
+          memos: contact.memo,
+          tones: contact.tone,
+          groupName: contact.group,
+          relationType: contact.nickname || "FRIEND", // Enum 형식이면 FRIEND, FAMILY 등으로 매핑 필요
+        };
+
+        await addFriend(memberId, payload);
+      }
+
+      alert("연락처가 성공적으로 저장되었습니다!");
+      navigate("/");
+    } catch (error) {
+      console.error("연락처 저장 오류:", error);
+      alert("연락처 저장에 실패했습니다.");
+    }
+  };
   return (
     <div style={styles.container}>
       {/* 왼쪽: 연락처 추가 폼 */}
