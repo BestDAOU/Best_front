@@ -22,7 +22,7 @@ class MessageGenerationService {
         keywords: selectedKeywords,
       });
 
-      return response.data.generatedMessage;
+      return response.data.result.generatedMessage;
     } catch (error) {
       console.error(
         "메시지 생성 API 오류:",
