@@ -30,8 +30,6 @@ const PersonalizationModal = ({
 
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-
-
   // handleToneSelection 함수 추가
   const handleToneSelection = (toneInstruction) => {
     if (currentContact) {
@@ -268,7 +266,6 @@ const PersonalizationModal = ({
                     >
                       {tone.label}
                     </button>
-
                   ))}
                   <button
                     type="button"
@@ -288,7 +285,6 @@ const PersonalizationModal = ({
                   >
                     + 말투 생성
                   </button>
-
                 </div>
                 {/* 선택된 어조의 예시 표시 */}
                 {/* 예시 설명 및 렌더링 */}
@@ -366,31 +362,78 @@ const PersonalizationModal = ({
             placeholder="여기에 텍스트가 표시됩니다."
           />
           <div style={styles.pagination}>
-            <button onClick={() => setCurrentIndex(0)} style={styles.navButton}>
-              처음
+            <button
+              onClick={() => setCurrentIndex(0)}
+              style={{
+                ...styles.navButton,
+                ...styles.mediaButton,
+                ...(currentIndex === 0 ? styles.navButtonDisabled : {}),
+                ...(hoveringTarget === "first" && currentIndex !== 0
+                  ? styles.navButtonHover
+                  : {}),
+              }}
+              disabled={currentIndex === 0}
+              onMouseEnter={() => setHoveringTarget("first")}
+              onMouseLeave={() => setHoveringTarget(null)}
+            >
+              ⏮
             </button>
             <button
               onClick={handlePrev}
+              style={{
+                ...styles.navButton,
+                ...styles.arrowButton,
+                ...(currentIndex === 0 ? styles.navButtonDisabled : {}),
+                ...(hoveringTarget === "prev" && currentIndex !== 0
+                  ? styles.navButtonHover
+                  : {}),
+              }}
               disabled={currentIndex === 0}
-              style={styles.navButton}
+              onMouseEnter={() => setHoveringTarget("prev")}
+              onMouseLeave={() => setHoveringTarget(null)}
             >
-              이전
+              &lt;
             </button>
             <span style={styles.pageInfo}>
               {currentIndex + 1} / {selectedContacts.length}
             </span>
             <button
               onClick={handleNext}
+              style={{
+                ...styles.navButton,
+                ...styles.arrowButton,
+                ...(currentIndex === selectedContacts.length - 1
+                  ? styles.navButtonDisabled
+                  : {}),
+                ...(hoveringTarget === "next" &&
+                currentIndex !== selectedContacts.length - 1
+                  ? styles.navButtonHover
+                  : {}),
+              }}
               disabled={currentIndex === selectedContacts.length - 1}
-              style={styles.navButton}
+              onMouseEnter={() => setHoveringTarget("next")}
+              onMouseLeave={() => setHoveringTarget(null)}
             >
-              다음
+              &gt;
             </button>
             <button
               onClick={() => setCurrentIndex(selectedContacts.length - 1)}
-              style={styles.navButton}
+              style={{
+                ...styles.navButton,
+                ...styles.mediaButton,
+                ...(currentIndex === selectedContacts.length - 1
+                  ? styles.navButtonDisabled
+                  : {}),
+                ...(hoveringTarget === "last" &&
+                currentIndex !== selectedContacts.length - 1
+                  ? styles.navButtonHover
+                  : {}),
+              }}
+              disabled={currentIndex === selectedContacts.length - 1}
+              onMouseEnter={() => setHoveringTarget("last")}
+              onMouseLeave={() => setHoveringTarget(null)}
             >
-              끝
+              ⏭
             </button>
           </div>
 
@@ -409,7 +452,6 @@ const PersonalizationModal = ({
       </div>
     </div>
   );
-
 };
 const styles = {
   modalOverlay: {
@@ -514,25 +556,66 @@ const styles = {
     transition: "background-color 0.3s",
   },
 
+  // 페이지네이션 컨테이너 스타일 수정
   pagination: {
     display: "flex",
-    justifyContent: "space-between",
-    marginTop: "10px",
+    justifyContent: "center", // 중앙 정렬
+    alignItems: "center", // 수직 중앙 정렬
+    gap: "60px", // 버튼 사이 간격 늘림
+    marginTop: "15px",
   },
+
   navButton: {
-    backgroundColor: "#4A90E2", // 네비게이션 버튼 색상
-    color: "white",
+    backgroundColor: "transparent",
+    color: "#4A90E2",
     border: "none",
-    padding: "10px 20px",
-    borderRadius: "6px",
+    padding: "5px",
     cursor: "pointer",
-    transition: "background-color 0.3s",
+    transition: "all 0.2s",
+    fontSize: "50px",
+    fontWeight: "bold",
+    minWidth: "30px",
+    height: "30px", // 높이 고정
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center", // 수직 정렬
+    boxShadow: "none",
+    lineHeight: 1, // 라인 높이를 1로 통일
   },
+
+  // < > 기호를 위한 스타일
+  arrowButton: {
+    fontSize: "30px", // 화살표 크기 키움
+    position: "relative",
+    top: "2px", // 위치 미세 조정
+  },
+
+  // ⏮ ⏭ 기호를 위한 스타일
+  mediaButton: {
+    fontSize: "30px", // 미디어 컨트롤 기호 크기
+    position: "relative",
+    top: "-1px", // 필요시 조정
+  },
+
   pageInfo: {
     fontSize: "16px",
     fontWeight: "bold",
-    color: "#4A90E2", // 페이지 정보 색상
+    color: "#333", // 색상 변경
+    margin: "0 10px", // 좌우 여백 추가
   },
+
+  // disabled 상태일 때의 스타일도 추가
+  navButtonDisabled: {
+    color: "#cccccc", // 비활성화 상태일 때 연한 회색
+    cursor: "default", // 비활성화 상태일 때 커서 변경
+  },
+
+  // hover 상태일 때의 스타일 추가
+  navButtonHover: {
+    color: "#3a78c2", // 호버 시 색상 변경
+    transform: "scale(1.2)", // 호버 시 약간 확대
+  },
+
   buttonGroup: {
     display: "flex",
     justifyContent: "space-between",

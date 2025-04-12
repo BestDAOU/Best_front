@@ -602,11 +602,6 @@ const customSelectStyles = {
 };
 
 const styles = {
-  contactName: {
-    marginTop: "10px",
-    fontSize: "18px",
-    fontWeight: "bold",
-  },
   contactInfo: {
     marginTop: "10px",
     fontSize: "16px",
@@ -737,8 +732,11 @@ const styles = {
     fontWeight: "bold", //bold로 설정
   },
   contactListSection: {
-    width: "1200px",
+    width: "100%",
     maxWidth: "1200px",
+    boxSizing: "border-box",
+    padding: "0", // 패딩 제거 또는 줄이기
+    overflow: "hidden", // 추가
   },
   sendButtonContainer: {
     display: "flex",
@@ -878,19 +876,22 @@ const styles = {
     textAlign: "center",
     marginLeft: "20px", // 전송하기 버튼과 간격
   },
+
+  // Updated reserveSettingSection style
   reserveSettingSection: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
+    // backgroundColor: "#F0F4FA",
     backgroundColor: "#F0F4FA",
-    padding: "12px 40px",
+    padding: "20px",
     borderRadius: "12px",
-    width: "850px",
-    maxWidth: "100%",
-    margin: "0 auto 30px auto",
+    width: "1200px",
+    boxSizing: "border-box",
+    margin: "60px 0", // Changed from "0 auto 30px auto"
     boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
     fontSize: "16px",
+    marginRight: "20px",
   },
   datePicker: {
     padding: "12px 15px",
