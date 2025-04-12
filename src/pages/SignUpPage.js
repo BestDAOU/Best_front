@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { createMember } from "../services/MemberService";
 
@@ -9,21 +9,28 @@ function SignUpPage() {
     formState: { errors },
   } = useForm();
 
+  const [emailError, setEmailError] = useState(""); // ✅ 중복 이메일 메시지 상태 추가
+
   const onSubmit = async (data) => {
+    setEmailError(""); // 제출 전 초기화
     try {
       const response = await createMember(data);
       alert("회원가입 성공!");
       console.log("가입된 사용자:", response.data);
     } catch (error) {
       console.error("회원가입 실패", error);
-      alert("회원가입 실패 😢");
+      if (error.response && error.response.status === 400) {
+        // 백엔드에서 이메일 중복일 때 400으로 응답하도록 처리되어 있어야 함
+        setEmailError("이미 사용 중인 이메일입니다.");
+      } else {
+        alert("회원가입 실패 😢");
+      }
     }
   };
 
   return (
     <div className="signup-wrapper">
       <style>{`
-        /* 전체 배경 색 적용 */
         .signup-wrapper {
           min-height: 100vh;
           background-color: #f9f9f9;
@@ -98,6 +105,7 @@ function SignUpPage() {
             placeholder="example@email.com"
           />
           {errors.email && <span>이메일은 필수입니다.</span>}
+          {emailError && <span>{emailError}</span>} {/* ✅ 중복 에러 메시지 표시 */}
 
           <label>비밀번호</label>
           <input
