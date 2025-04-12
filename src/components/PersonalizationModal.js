@@ -193,25 +193,6 @@ const PersonalizationModal = ({
         <div style={styles.leftSection}>
           <div style={styles.titleWithInlineButton}>
             <h2 style={styles.inlineTitle}>텍스트 개인 맞춤화</h2>
-            <input
-              type="file"
-              accept=".txt"
-              onChange={handleToneFileUpload}
-              style={{ display: "none" }}
-              id="toneFileInput"
-            />
-            <button
-              onClick={() => document.getElementById("toneFileInput").click()}
-              style={{
-                ...styles.inlineToneExtractButton,
-                ...(hoveringTarget === "extract" &&
-                  styles.inlineToneExtractButtonHover),
-              }}
-              onMouseEnter={() => setHoveringTarget("extract")}
-              onMouseLeave={() => setHoveringTarget(null)}
-            >
-              대화 말투 추출
-            </button>
           </div>
 
           {currentContact && (
