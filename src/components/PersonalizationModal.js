@@ -4,6 +4,7 @@ import tonesobj from "../data/tones.json";
 import MessageAnimation from "../components/MessageAnimation";
 import examplesobj from "../data/examples.json"; // 예시목록들 가져오기
 import UploadToneModal from "../components/UploadToneModal"; // 상단 import
+import PersonalizationService from "../services/PersonalizationService"; // Import the OpenAI service
 
 const PersonalizationModal = ({
   selectedContacts,
@@ -23,17 +24,9 @@ const PersonalizationModal = ({
   const [selectedTones, setSelectedTones] = useState({}); // 선택된 톤 상태
 
   const currentContact = selectedContacts[currentIndex];
-  const { tag, memo } = currentContact; // 현재 선택된 연락처의 tag와 memo 가져오기
-  const [isHovering, setIsHovering] = useState(false);
+  // 기존 isHovering → 새로운 state로 변경
+  const [hoveringTarget, setHoveringTarget] = useState(null);
   const [selectedToneExamples, setSelectedToneExamples] = useState([]);
-  const handleMouseEnter = () => setIsHovering(true);
-  const handleMouseLeave = () => setIsHovering(false);
-  const removeEmojis = (text) => {
-    return text.replace(
-      /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}]/gu,
-      ""
-    );
-  };
 
   const [showUploadModal, setShowUploadModal] = useState(false);
 
@@ -59,18 +52,6 @@ const PersonalizationModal = ({
   };
 
   const handleComplete = () => {
-    // // 완료 버튼 클릭 시 업데이트된 톤을 부모 컴포넌트로 전달
-    // const updatedContacts = selectedContacts.map((contact) => ({
-    //   ...contact,
-    //   tone: selectedTones[contact.id],
-    // }));
-    // setContacts((prevContacts) =>
-    //   prevContacts.map(
-    //     (contact) =>
-    //       updatedContacts.find((updated) => updated.id === contact.id) ||
-    //       contact
-    //   )
-    // ); // 부모의 contacts 배열 업데이트
     closeModal();
   };
 
@@ -118,12 +99,15 @@ const PersonalizationModal = ({
   }, [currentContact, tones]);
 
   const handleConvert = async () => {
-    const textToConvert = convertedTexts[currentContact.id] || "";
+    const textToConvert = convertedTexts[currentContact.id] || ""; //변환된 문자 배열 중 현재 수신자의 id
     if (!textToConvert) {
       alert("변환할 텍스트를 입력하세요.");
       return;
     }
-    const selectedToneInstruction = selectedTones[currentContact.id];
+
+    const selectedToneInstruction = selectedTones[currentContact.id]; // 선택된 유저의 선택된 어조 추출
+
+    // 톤.json에서 선택된 톤에 대한 라벨,설명,예시 정보 추출
     const selectedToneData = tones.find(
       (tone) => tone.instruction === selectedToneInstruction
     );
@@ -132,59 +116,26 @@ const PersonalizationModal = ({
       return;
     }
 
-    const { instruction, examples } = selectedToneData;
-
-    // 모든 예시를 프롬프트에 포함
-    const examplesText = examples
+    // 예시들이 배열이어서 한개의 문자열로 바꿈
+    const examplesText = selectedToneData.examples
       .map((example, index) => `Example ${index + 1}: "${example}"`)
       .join("\n");
 
-    const prompt = `
-    Please rewrite the following message in a tone that is described as follows:
-    "${instruction}"
-    The message should reflect the person's characteristics, notes, and the given examples.
-    Use appropriate line breaks to enhance readability.
-    The response must be written in Korean and should address the recipient by their name.
-    Do not include any sign-offs, sender's name, or signatures at the end of the message.
-    You Never use any emojis or emoticons throughout the message.
-    Original message: "${textToConvert}"
-    Recipient's name: "${currentContact.name}"
-    Tags: "${tag}"
-    Memo: "${memo}"
-    Examples for this tone:
-      ${examplesText}
-  `;
-
     setLoading(true);
+
     try {
-      const response = await axios.post(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          model: "gpt-4-turbo",
-          messages: [
-            {
-              role: "system",
-              content: "You are a helpful assistant.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          max_tokens: 1000,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-          },
-        }
-      );
-
+      // OpenAI 서비스 호출
+      const originalMessage = await PersonalizationService.convertText({
+        text: textToConvert,
+        name: currentContact.name,
+        tag: currentContact.tag,
+        memo: currentContact.memo,
+        instruction: selectedToneData.instruction,
+        examplesText: examplesText,
+      });
       // 이모지 제거 후 ContactList의 convertedTexts 업데이트
-      const originalMessage = response.data.choices[0].message.content.trim();
       const cleanedMessage = removeEmojis(originalMessage);
-
+      // 변환된 문자 내용으로 적용
       setConvertedTexts((prev) => ({
         ...prev,
         [currentContact.id]: cleanedMessage,
@@ -197,6 +148,13 @@ const PersonalizationModal = ({
       alert("텍스트 변환에 실패했습니다. 다시 시도해주세요.");
     }
     setLoading(false);
+  };
+
+  const removeEmojis = (text) => {
+    return text.replace(
+      /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}]/gu,
+      ""
+    );
   };
 
   const handleTextChange = (e) => {
@@ -213,13 +171,49 @@ const PersonalizationModal = ({
     }));
   };
 
+  const handleToneFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const content = e.target.result;
+      console.log("업로드된 파일 내용:", content); // ✅ 콘솔에 출력
+    };
+
+    reader.readAsText(file);
+  };
+
   return (
     <div style={styles.modalOverlay}>
       <div style={styles.modalContent}>
         {loading && <MessageAnimation />}
         {/* 왼쪽 영역 */}
         <div style={styles.leftSection}>
-          <h2 style={styles.title}>텍스트 개인 맞춤화</h2>
+          <div style={styles.titleWithInlineButton}>
+            <h2 style={styles.inlineTitle}>텍스트 개인 맞춤화</h2>
+            <input
+              type="file"
+              accept=".txt"
+              onChange={handleToneFileUpload}
+              style={{ display: "none" }}
+              id="toneFileInput"
+            />
+            <button
+              onClick={() => document.getElementById("toneFileInput").click()}
+              style={{
+                ...styles.inlineToneExtractButton,
+                ...(hoveringTarget === "extract" &&
+                  styles.inlineToneExtractButtonHover),
+              }}
+              onMouseEnter={() => setHoveringTarget("extract")}
+              onMouseLeave={() => setHoveringTarget(null)}
+            >
+              대화 말투 추출
+            </button>
+          </div>
+
           {currentContact && (
             <>
               <div style={styles.inputGroup}>
@@ -253,7 +247,7 @@ const PersonalizationModal = ({
               </div>
 
               <div style={styles.toneSelection}>
-                <label>어조 선택:</label>
+                <label>말투 선택:</label>
                 <div style={styles.toneButtons}>
                   {tones.map((tone) => (
                     <button
@@ -278,11 +272,23 @@ const PersonalizationModal = ({
                   ))}
                   <button
                     type="button"
-                    style={{ ...styles.toneButton, backgroundColor: "#ffdb4d" }}
+                    style={{
+                      ...styles.toneButton,
+                      border: "1.5px dashed #4A90E2",
+                      color: "#4A90E2",
+                      backgroundColor: "#ffffff",
+                      fontWeight: "bold",
+                      ...(hoveringTarget === "generate" && {
+                        backgroundColor: "#e8f1fd",
+                      }),
+                    }}
                     onClick={() => setShowUploadModal(true)}
+                    onMouseEnter={() => setHoveringTarget("generate")}
+                    onMouseLeave={() => setHoveringTarget(null)}
                   >
-                    + 어조 생성
+                    + 말투 생성
                   </button>
+
                 </div>
                 {/* 선택된 어조의 예시 표시 */}
                 {/* 예시 설명 및 렌더링 */}
@@ -328,20 +334,25 @@ const PersonalizationModal = ({
             <span style={styles.convertLabel}>텍스트 변환</span>
             <button
               type="button"
-              style={styles.convertButton}
               onClick={handleConvert}
               disabled={loading}
+              onMouseEnter={() => setHoveringTarget("convert")}
+              onMouseLeave={() => setHoveringTarget(null)}
+              style={{
+                ...styles.convertButton,
+                ...(hoveringTarget === "convert" && styles.convertButtonHover),
+              }}
             >
               {loading ? "변환 중..." : "변환"}
             </button>
             <button
               type="button"
               onClick={initMessage}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
+              onMouseEnter={() => setHoveringTarget("reset")}
+              onMouseLeave={() => setHoveringTarget(null)}
               style={{
                 ...styles.resetButton,
-                ...(isHovering && styles.resetButtonHover), // hover 시 추가 스타일 적용
+                ...(hoveringTarget === "reset" && styles.resetButtonHover),
               }}
             >
               ↺ 되돌리기
@@ -448,13 +459,6 @@ const styles = {
     resize: "none",
     boxSizing: "border-box",
     height: "400px",
-  },
-
-  title: {
-    marginBottom: "20px",
-    fontSize: "22px",
-    fontWeight: "bold",
-    color: "#4A90E2", // 제목 색상
   },
   form: {
     display: "flex",
@@ -605,6 +609,37 @@ const styles = {
     fontSize: "14px",
     color: "#999",
     textAlign: "center",
+  },
+  titleWithInlineButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px", // 제목과 버튼 사이 간격
+    marginBottom: "20px",
+  },
+  inlineToneExtractButton: {
+    backgroundColor: "#4A90E2",
+    color: "white",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: "regular",
+    transition: "0.3s",
+    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+    height: "32px", // 텍스트 높이와 잘 맞게
+    lineHeight: "1", // 텍스트 수직 정렬
+  },
+  convertButtonHover: {
+    backgroundColor: "#3a78c2",
+    transform: "scale(1.05)",
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+  },
+
+  inlineToneExtractButtonHover: {
+    backgroundColor: "#3a78c2",
+    transform: "scale(1.05)",
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
   },
 };
 

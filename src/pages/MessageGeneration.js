@@ -4,6 +4,7 @@ import axios from "axios";
 import LoadingAnimation from "../components/LoadingAnimation";
 import MessageGenerateAnimation from "../components/MessageGenerateAnimation";
 import Message2Animation from "../components/MessageAnimation";
+import MessageGenerationService from "../services/MessageGenerationService"; // 서비스 불러오기
 
 // 메시지 생성 페이지 컴포넌트
 const MessageGenerationPage = () => {
@@ -40,47 +41,17 @@ const MessageGenerationPage = () => {
     setIsLoading(true);
     setError(null);
 
-    const prompt = `
-다음의 키워드와 내용을 바탕으로 적절한 메시지를 생성해 주세요.
-
-키워드: ${selectedKeywords.length > 0 ? selectedKeywords.join(", ") : "없음"}
-내용: ${inputText}
-
-생성된 메시지:
-`;
-
     try {
-      const response = await axios.post(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          model: "gpt-4",
-          messages: [
-            {
-              role: "system",
-              content:
-                "당신은 메시지 작성 전문가입니다. 요청된 키워드와 내용을 기반으로 명확하고 적절한 메시지를 생성합니다. 메시지는 사용자가 원하는 목적에 맞게 공식적이거나 비공식적인 톤을 반영해야 합니다.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          max_tokens: 500,
-          temperature: 0.7,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-          },
-        }
+      // 백엔드 API를 통해 메시지 생성 요청
+      const message = await MessageGenerationService.generateMessage(
+        inputText,
+        selectedKeywords
       );
 
-      const message = response.data.choices[0].message.content.trim();
       setGeneratedMessage(message);
     } catch (err) {
       console.error(err);
-      setError("메시지 생성에 실패했습니다. 다시 시도해주세요.");
+      setError(err.message || "메시지 생성에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsLoading(false);
     }
