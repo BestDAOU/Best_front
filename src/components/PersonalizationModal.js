@@ -3,6 +3,7 @@ import axios from "axios";
 import tonesobj from "../data/tones.json";
 import MessageAnimation from "../components/MessageAnimation";
 import examplesobj from "../data/examples.json"; // 예시목록들 가져오기
+import UploadToneModal from "../components/UploadToneModal"; // 상단 import
 
 const PersonalizationModal = ({
   selectedContacts,
@@ -33,6 +34,10 @@ const PersonalizationModal = ({
       ""
     );
   };
+
+  const [showUploadModal, setShowUploadModal] = useState(false);
+
+
 
   // handleToneSelection 함수 추가
   const handleToneSelection = (toneInstruction) => {
@@ -269,7 +274,15 @@ const PersonalizationModal = ({
                     >
                       {tone.label}
                     </button>
+
                   ))}
+                  <button
+                    type="button"
+                    style={{ ...styles.toneButton, backgroundColor: "#ffdb4d" }}
+                    onClick={() => setShowUploadModal(true)}
+                  >
+                    + 어조 생성
+                  </button>
                 </div>
                 {/* 선택된 어조의 예시 표시 */}
                 {/* 예시 설명 및 렌더링 */}
@@ -296,7 +309,19 @@ const PersonalizationModal = ({
             </>
           )}
         </div>
-
+        {showUploadModal && (
+          <UploadToneModal
+            onClose={() => setShowUploadModal(false)}
+            onToneGenerated={(newTone) => {
+              // tonesobj가 state일 경우 setTones([...tones, newTone]) 해야 함
+              tones.push(newTone); // 현재 구조 기준
+              setSelectedTones((prev) => ({
+                ...prev,
+                [currentContact.id]: newTone.instruction,
+              }));
+            }}
+          />
+        )}
         {/* 오른쪽 영역 */}
         <div style={styles.rightSection}>
           <div style={styles.convertSection}>
@@ -373,6 +398,7 @@ const PersonalizationModal = ({
       </div>
     </div>
   );
+
 };
 const styles = {
   modalOverlay: {
