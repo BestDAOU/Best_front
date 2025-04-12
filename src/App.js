@@ -1,41 +1,105 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Header from "./components/Header"; // Header 컴포넌트 불러오기
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import Header from "./components/Header";
 import MainPage from "./pages/MainPage";
 import MessageGeneration from "./pages/MessageGeneration";
 import ImageGeneration from "./pages/ImageGeneration";
 import ContactForm from "./pages/ContactForm";
 import ChatbotPage from "./pages/ChatbotPage";
 import SignUpPage from "./pages/SignUpPage";
-import { UserProvider } from "./store/UserContext"
+import { UserProvider, useUser } from "./store/UserContext";
 import LoginPage from "./pages/LoginPage";
-function App() {
-  // 더미 데이터로 로그인 상태와 사용자 이름 설정
-  const isLoggedIn = true;
-  const userName = "안예찬";
+import LandingPage from "./pages/LandingPage";
 
+// 보호된 라우트 컴포넌트
+const ProtectedRoute = ({ children }) => {
+  const { user } = useUser();
+  const location = useLocation();
+
+  // user 객체가 있는지 확인 (로그인 여부 판단)
+  if (!user) {
+    // 로그인 페이지로 리디렉션하고, 로그인 후 원래 페이지로 돌아올 수 있도록 location 정보 저장
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
+
+// App 콘텐츠 컴포넌트 (UserContext 사용을 위해 분리)
+const AppContent = () => {
+  const { user } = useUser();
+  
+  return (
+    <>
+      <Header
+        isLoggedIn={!!user}
+        userName={user?.name || ""}
+        onLogout={() => alert("로그아웃 기능은 현재 비활성화 상태입니다.")}
+      />
+      {/* 고정된 헤더 아래 내용 */}
+      <div style={{ marginTop: "60px" }}>
+        <Routes>
+          {/* 공개 라우트 - 로그인 없이 접근 가능 */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          
+          {/* 보호된 라우트 - 로그인 사용자만 접근 가능 */}
+          <Route 
+            path="/main" 
+            element={
+              <ProtectedRoute>
+                <MainPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/message-generation" 
+            element={
+              <ProtectedRoute>
+                <MessageGeneration />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/image-generation" 
+            element={
+              <ProtectedRoute>
+                <ImageGeneration />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/contact-form" 
+            element={
+              <ProtectedRoute>
+                <ContactForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/chatbot" 
+            element={
+              <ProtectedRoute>
+                <ChatbotPage />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* 존재하지 않는 경로는 홈으로 리디렉션 */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </>
+  );
+};
+
+// 메인 App 컴포넌트
+function App() {
   return (
     <UserProvider>
       <Router>
-        <Header
-          isLoggedIn={isLoggedIn}
-          userName={userName}
-          onLogout={() => alert("로그아웃 기능은 현재 비활성화 상태입니다.")}
-        />
-        {/* 고정된 헤더 아래 내용 */}
-        <div style={{ marginTop: "60px" }}>
-          {" "}
-          {/* 고정된 헤더 공간 확보를 위한 여백 추가 */}
-          <Routes>
-            <Route path="/" element={<MainPage />} />
-            <Route path="/message-generation" element={<MessageGeneration />} />
-            <Route path="/image-generation" element={<ImageGeneration />} />
-            <Route path="/contact-form" element={<ContactForm />} />
-            <Route path="/chatbot" element={<ChatbotPage />} />
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="/login" element={<LoginPage />} />
-          </Routes>
-        </div>
+        <AppContent />
       </Router>
     </UserProvider>
   );
