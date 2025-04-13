@@ -9,9 +9,11 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    localStorage.removeItem("memberId");
+    localStorage.removeItem("memberName");
     setUser(null); // 유저 정보 제거
     alert("로그아웃 되었습니다.");
-    navigate("/"); // 홈으로 이동
+    navigate("/login"); // 홈으로 이동
   };
 
   return (

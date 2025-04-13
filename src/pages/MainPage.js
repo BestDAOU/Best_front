@@ -20,6 +20,7 @@ const getInitialReserveTime = () => {
   const now = new Date();
   const roundedMinutes = Math.ceil(now.getMinutes() / 5) * 5;
 
+
   let hour = now.getHours();
   let minute = roundedMinutes;
   let date = new Date(now);
@@ -51,6 +52,8 @@ const MainPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const loginMemberId = localStorage.getItem("memberId");
+  console.log("login : ", loginMemberId)
   // 전달된 state에서 메시지와 이미지를 추출
   const messageFromState = location.state?.message || "";
   const [message, setMessage] = useState(messageFromState);
@@ -298,9 +301,8 @@ const MainPage = () => {
 
               {/* 현재 수신자 인덱스 및 이름 표시 */}
               <p style={styles.contactInfo}>
-                {`수신자 ${currentContactIndex + 1} / ${
-                  selectedContacts.length
-                } : ${selectedContacts[currentContactIndex].name}`}
+                {`수신자 ${currentContactIndex + 1} / ${selectedContacts.length
+                  } : ${selectedContacts[currentContactIndex].name}`}
               </p>
 
               {/* 이전/다음 버튼 */}
@@ -389,9 +391,9 @@ const MainPage = () => {
                   style={
                     isDeleteButtonHovered
                       ? {
-                          ...styles.imageDeleteButton,
-                          ...styles.imageDeleteButtonHover,
-                        }
+                        ...styles.imageDeleteButton,
+                        ...styles.imageDeleteButtonHover,
+                      }
                       : styles.imageDeleteButton
                   }
                   onClick={() => {
@@ -413,10 +415,10 @@ const MainPage = () => {
                     style={
                       isDeleteButtonHovered
                         ? {
-                            ...styles.imageRestoreButton,
+                          ...styles.imageRestoreButton,
 
-                            ...styles.imageRestoreButtonHover,
-                          }
+                          ...styles.imageRestoreButtonHover,
+                        }
                         : styles.imageRestoreButton
                     }
                     onClick={() => {
@@ -452,6 +454,7 @@ const MainPage = () => {
       {/* 주소록을 메시지와 이미지 자동생성 바로 아래에 배치 */}
       <div style={styles.contactListSection}>
         <ContactList
+          memberId={loginMemberId}
           message={message}
           setMessage={setMessage}
           convertedTexts={convertedTexts}

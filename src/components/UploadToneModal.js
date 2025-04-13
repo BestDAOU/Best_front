@@ -185,11 +185,12 @@ const styles = {
     backButton: {
         backgroundColor: "#e0e0e0",
         color: "#333",
-        padding: "10px 15px",
+        padding: "12px 26px",
         border: "none",
         borderRadius: "8px",
         cursor: "pointer",
-        fontSize: "13px",
+        fontSize: "14px",
+        transition: "all 0.2s",
     },
     dropZone: {
         border: "2px dashed #ccc",

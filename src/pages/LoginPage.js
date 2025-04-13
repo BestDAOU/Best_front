@@ -9,7 +9,7 @@ const LoginPage = () => {
   const { setUser } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // 로그인 성공 후 리디렉션할 경로 (이전에 접근하려던 보호된 경로 또는 메인 페이지)
   const from = location.state?.from?.pathname || "/main";
 
@@ -19,8 +19,10 @@ const LoginPage = () => {
       const userInfo = response.data;
 
       setUser(userInfo); // 전역 상태에 저장
+      localStorage.setItem("memberId", userInfo.id); // 또는 userInfo.memberId
+      localStorage.setItem("memberName", userInfo.name); // ✅ 이름도 저장
       alert("로그인 성공!");
-      
+
       // 원래 접근하려던 페이지 또는 메인 페이지로 리디렉션
       navigate(from, { replace: true });
     } catch (err) {
