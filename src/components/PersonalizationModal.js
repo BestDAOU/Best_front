@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import tonesobj from "../data/tones.json";
 import MessageAnimation from "../components/MessageAnimation";
-import examplesobj from "../data/examples.json"; // 예시목록들 가져오기
 import UploadToneModal from "../components/UploadToneModal"; // 상단 import
 import { convertText } from "../services/PersonalizationService"; // Import the OpenAI service
 
@@ -36,13 +33,11 @@ const PersonalizationModal = ({
         [currentContact.id]: toneName,
       }));
 
-      // examples.json에서 해당 어조의 예시 가져오기
-      const matchingExamples = examplesobj.find(
-        (example) => example.label === toneName
+      // 해당 톤의 예시 직접 사용
+      const matchingTone = currentContact.tonesInfo.find(
+        (tone) => tone.name === toneName
       );
-      setSelectedToneExamples(
-        matchingExamples ? matchingExamples.examples : []
-      );
+      setSelectedToneExamples(matchingTone?.toneExamples || []); // examples → toneExamples
     }
   };
 
@@ -59,7 +54,7 @@ const PersonalizationModal = ({
       Math.min(prevIndex + 1, selectedContacts.length - 1)
     );
   };
-  // 현재 연락처의 기본 선택된 어조 설정
+
   // 현재 연락처의 기본 선택된 어조 설정 (useEffect 수정)
   useEffect(() => {
     if (currentContact) {
@@ -74,12 +69,13 @@ const PersonalizationModal = ({
 
       // 기본 선택된 어조의 예시 가져오기
       if (currentContact.tone) {
-        const matchingExamples = examplesobj.find(
-          (example) => example.label === currentContact.tone
+        // 현재 선택된 톤 정보 찾기
+        const matchingTone = currentContact.tonesInfo.find(
+          (tone) => tone.name === currentContact.tone
         );
-        setSelectedToneExamples(
-          matchingExamples ? matchingExamples.examples : []
-        );
+
+        // 해당 톤의 예시 직접 사용
+        setSelectedToneExamples(matchingTone?.toneExamples || []); // examples → toneExamples
       } else {
         setSelectedToneExamples([]); // 예시가 없으면 빈 배열
       }
