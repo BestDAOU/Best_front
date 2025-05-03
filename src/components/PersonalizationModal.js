@@ -11,10 +11,7 @@ const PersonalizationModal = ({
   closeModal,
   convertedTexts,
   setConvertedTexts,
-  onComplete,
   message,
-  //추가
-  setContacts, // 추가
   //
 }) => {
   // 톤 선택 버튼을 렌더링하기 위한 톤 목록
@@ -169,20 +166,6 @@ const PersonalizationModal = ({
     }));
   };
 
-  const handleToneFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const content = e.target.result;
-      console.log("업로드된 파일 내용:", content); // ✅ 콘솔에 출력
-    };
-
-    reader.readAsText(file);
-  };
-
   return (
     <div style={styles.modalOverlay}>
       <div style={styles.modalContent}>
@@ -191,25 +174,6 @@ const PersonalizationModal = ({
         <div style={styles.leftSection}>
           <div style={styles.titleWithInlineButton}>
             <h2 style={styles.inlineTitle}>텍스트 개인 맞춤화</h2>
-            <input
-              type="file"
-              accept=".txt"
-              onChange={handleToneFileUpload}
-              style={{ display: "none" }}
-              id="toneFileInput"
-            />
-            <button
-              onClick={() => document.getElementById("toneFileInput").click()}
-              style={{
-                ...styles.inlineToneExtractButton,
-                ...(hoveringTarget === "extract" &&
-                  styles.inlineToneExtractButtonHover),
-              }}
-              onMouseEnter={() => setHoveringTarget("extract")}
-              onMouseLeave={() => setHoveringTarget(null)}
-            >
-              대화 말투 추출
-            </button>
           </div>
 
           {currentContact && (

@@ -13,9 +13,12 @@ import LandingPage from "./pages/LandingPage";
 
 // 보호된 라우트 컴포넌트
 const ProtectedRoute = ({ children }) => {
-  const { user } = useUser();
+  const { user, loading } = useUser(); // loading 추가
   const location = useLocation();
-
+  // 로딩 중일 때는 아무 것도 보여주지 않음 (또는 스피너 표시 가능)
+  if (loading) {
+    return <div>로딩 중...</div>;
+  }
   // user 객체가 있는지 확인 (로그인 여부 판단)
   if (!user) {
     // 로그인 페이지로 리디렉션하고, 로그인 후 원래 페이지로 돌아올 수 있도록 location 정보 저장
@@ -28,7 +31,7 @@ const ProtectedRoute = ({ children }) => {
 // App 콘텐츠 컴포넌트 (UserContext 사용을 위해 분리)
 const AppContent = () => {
   const { user } = useUser();
-  
+
   return (
     <>
       <Header
@@ -43,49 +46,49 @@ const AppContent = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
-          
+
           {/* 보호된 라우트 - 로그인 사용자만 접근 가능 */}
-          <Route 
-            path="/main" 
+          <Route
+            path="/main"
             element={
               <ProtectedRoute>
                 <MainPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/message-generation" 
+          <Route
+            path="/message-generation"
             element={
               <ProtectedRoute>
                 <MessageGeneration />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/image-generation" 
+          <Route
+            path="/image-generation"
             element={
               <ProtectedRoute>
                 <ImageGeneration />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/contact-form" 
+          <Route
+            path="/contact-form"
             element={
               <ProtectedRoute>
                 <ContactForm />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/chatbot" 
+          <Route
+            path="/chatbot"
             element={
               <ProtectedRoute>
                 <ChatbotPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          
+
           {/* 존재하지 않는 경로는 홈으로 리디렉션 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
