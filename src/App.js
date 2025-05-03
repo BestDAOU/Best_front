@@ -11,6 +11,8 @@ import { UserProvider, useUser } from "./store/UserContext";
 import LoginPage from "./pages/LoginPage";
 import LandingPage from "./pages/LandingPage";
 
+import ChatbotWidget from "./components/chatbot/ChatbotWidget"; // ✅ 챗봇 위젯 import
+
 // 보호된 라우트 컴포넌트
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useUser(); // loading 추가
@@ -93,6 +95,8 @@ const AppContent = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
+
+      <ChatbotWidget />
     </>
   );
 };

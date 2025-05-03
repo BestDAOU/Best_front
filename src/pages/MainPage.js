@@ -14,7 +14,6 @@ import { format } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { extractKeywordsFromServer } from "../services/KeywordService";
-
 // 현재 시간을 기준으로 가장 가까운 5분 단위의 시간 계산
 const getInitialReserveTime = () => {
   const now = new Date();
@@ -53,7 +52,6 @@ const MainPage = () => {
   const location = useLocation();
 
   const loginMemberId = localStorage.getItem("memberId");
-  console.log("login : ", loginMemberId)
   // 전달된 state에서 메시지와 이미지를 추출
   const messageFromState = location.state?.message || "";
   const [message, setMessage] = useState(messageFromState);
@@ -81,6 +79,7 @@ const MainPage = () => {
 
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false); //달력 창 열고 닫기 위한 변수
   const formattedDate = reserveDate ? format(reserveDate, "yyyy-MM-dd") : ""; // 년-월-일 형식으로 변환
+
 
   // 날짜 선택되면 값 저장 후 닫기
   const handleDateSelect = (date) => {
@@ -568,6 +567,13 @@ const MainPage = () => {
           </button>
         </div>
       </div>
+
+      {/* 플로팅 챗봇 버튼 */}
+      {/* <ChatbotButton onClick={toggleChatbot} /> */}
+
+      {/* 챗봇 창 */}
+      {/* {showChatbot && <ChatbotContainer onClose={toggleChatbot} />}
+       */}
     </div>
   );
 };
