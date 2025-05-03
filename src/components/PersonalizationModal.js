@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import tonesobj from "../data/tones.json";
 import MessageAnimation from "../components/MessageAnimation";
-import examplesobj from "../data/examples.json"; // 예시목록들 가져오기
 import UploadToneModal from "../components/UploadToneModal"; // 상단 import
-import PersonalizationService from "../services/PersonalizationService"; // Import the OpenAI service
+import { convertText } from "../services/PersonalizationService"; // Import the OpenAI service
 
 const PersonalizationModal = ({
   selectedContacts,
@@ -15,7 +12,7 @@ const PersonalizationModal = ({
   //
 }) => {
   // 톤 선택 버튼을 렌더링하기 위한 톤 목록
-  const tones = tonesobj;
+  // const tones = tonesobj;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [selectedTones, setSelectedTones] = useState({}); // 선택된 톤 상태
@@ -28,21 +25,19 @@ const PersonalizationModal = ({
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   // handleToneSelection 함수 추가
-  const handleToneSelection = (toneInstruction) => {
+  const handleToneSelection = (toneName) => {
     if (currentContact) {
-      const tone = tones.find((tone) => tone.instruction === toneInstruction);
+      // toneName을 직접 저장 (단일 선택)
       setSelectedTones((prev) => ({
         ...prev,
-        [currentContact.id]: toneInstruction,
+        [currentContact.id]: toneName,
       }));
 
-      // examples.json에서 label로 예시 가져오기
-      const matchingExamples = examplesobj.find(
-        (example) => example.label === tone.label
+      // 해당 톤의 예시 직접 사용
+      const matchingTone = currentContact.tonesInfo.find(
+        (tone) => tone.name === toneName
       );
-      setSelectedToneExamples(
-        matchingExamples ? matchingExamples.examples : []
-      );
+      setSelectedToneExamples(matchingTone?.toneExamples || []); // examples → toneExamples
     }
   };
 
@@ -59,78 +54,69 @@ const PersonalizationModal = ({
       Math.min(prevIndex + 1, selectedContacts.length - 1)
     );
   };
-  // 현재 연락처의 기본 선택된 어조 설정
+
+  // 현재 연락처의 기본 선택된 어조 설정 (useEffect 수정)
   useEffect(() => {
     if (currentContact) {
       // 이미 선택된 어조가 있으면 유지, 없으면 기본 어조로 초기화
       setSelectedTones((prev) => {
         if (prev[currentContact.id]) return prev; // 기존 선택값 유지
-        const defaultTone = tones.find(
-          (tone) => tone.label === currentContact.tone
-        );
         return {
           ...prev,
-          [currentContact.id]: defaultTone
-            ? defaultTone.instruction
-            : "기본 말투로",
+          [currentContact.id]: currentContact.tone || "", // 기본값은 빈 문자열
         };
       });
 
-      // examples.json에서 초기 예시 가져오기
-      const defaultTone = tones.find(
-        (tone) => tone.label === currentContact.tone
-      );
-      if (defaultTone) {
-        const matchingExamples = examplesobj.find(
-          (example) => example.label === defaultTone.label
+      // 기본 선택된 어조의 예시 가져오기
+      if (currentContact.tone) {
+        // 현재 선택된 톤 정보 찾기
+        const matchingTone = currentContact.tonesInfo.find(
+          (tone) => tone.name === currentContact.tone
         );
-        setSelectedToneExamples(
-          matchingExamples ? matchingExamples.examples : []
-        );
+
+        // 해당 톤의 예시 직접 사용
+        setSelectedToneExamples(matchingTone?.toneExamples || []); // examples → toneExamples
       } else {
         setSelectedToneExamples([]); // 예시가 없으면 빈 배열
       }
     }
-  }, [currentContact, tones]);
+  }, [currentContact]);
 
+  // handleConvert 함수 수정
   const handleConvert = async () => {
-    const textToConvert = convertedTexts[currentContact.id] || ""; //변환된 문자 배열 중 현재 수신자의 id
+    const textToConvert = convertedTexts[currentContact.id] || "";
     if (!textToConvert) {
       alert("변환할 텍스트를 입력하세요.");
       return;
     }
 
-    const selectedToneInstruction = selectedTones[currentContact.id]; // 선택된 유저의 선택된 어조 추출
+    const selectedToneName = selectedTones[currentContact.id]; // 선택된 톤 이름
 
-    // 톤.json에서 선택된 톤에 대한 라벨,설명,예시 정보 추출
-    const selectedToneData = tones.find(
-      (tone) => tone.instruction === selectedToneInstruction
+    if (!selectedToneName) {
+      alert("어조를 선택해주세요.");
+      return;
+    }
+
+    // currentContact.tonesInfo에서 선택된 톤 정보를 찾음
+    const selectedToneData = currentContact.tonesInfo?.find(
+      (tone) => tone.name === selectedToneName
     );
+
     if (!selectedToneData) {
       alert("선택된 톤에 대한 데이터를 찾을 수 없습니다.");
       return;
     }
 
-    // 예시들이 배열이어서 한개의 문자열로 바꿈
-    const examplesText = selectedToneData.examples
-      .map((example, index) => `Example ${index + 1}: "${example}"`)
-      .join("\n");
-
     setLoading(true);
 
     try {
-      // OpenAI 서비스 호출
-      const originalMessage = await PersonalizationService.convertText({
-        text: textToConvert,
-        name: currentContact.name,
-        tag: currentContact.tag,
-        memo: currentContact.memo,
-        instruction: selectedToneData.instruction,
-        examplesText: examplesText,
+      // 선택된 톤의 ID와 텍스트만 전달하는 방식으로 변경
+      const originalMessage = await convertText({
+        originalText: textToConvert,
+        toneId: selectedToneData.id,
       });
-      // 이모지 제거 후 ContactList의 convertedTexts 업데이트
+
       const cleanedMessage = removeEmojis(originalMessage);
-      // 변환된 문자 내용으로 적용
       setConvertedTexts((prev) => ({
         ...prev,
         [currentContact.id]: cleanedMessage,
@@ -211,26 +197,28 @@ const PersonalizationModal = ({
               <div style={styles.toneSelection}>
                 <label>말투 선택:</label>
                 <div style={styles.toneButtons}>
-                  {tones.map((tone) => (
-                    <button
-                      key={tone.label}
-                      type="button"
-                      style={{
-                        ...styles.toneButton,
-                        backgroundColor:
-                          selectedTones[currentContact.id] === tone.instruction
-                            ? "#4A90E2"
-                            : "#e1e5f2", // 선택되지 않은 경우 흰색
-                        color:
-                          selectedTones[currentContact.id] === tone.instruction
-                            ? "white"
-                            : "black",
-                      }}
-                      onClick={() => handleToneSelection(tone.instruction)}
-                    >
-                      {tone.label}
-                    </button>
-                  ))}
+                  {/* 현재 연락처의 모든 tonesInfo 사용 (중복 제거 없음) */}
+                  {currentContact.tonesInfo &&
+                    currentContact.tonesInfo.map((tone) => (
+                      <button
+                        key={tone.id}
+                        type="button"
+                        style={{
+                          ...styles.toneButton,
+                          backgroundColor:
+                            selectedTones[currentContact.id] === tone.name
+                              ? "#4A90E2"
+                              : "#e1e5f2",
+                          color:
+                            selectedTones[currentContact.id] === tone.name
+                              ? "white"
+                              : "black",
+                        }}
+                        onClick={() => handleToneSelection(tone.name)}
+                      >
+                        {tone.name}
+                      </button>
+                    ))}
                   <button
                     type="button"
                     style={{
@@ -250,6 +238,7 @@ const PersonalizationModal = ({
                     + 말투 생성
                   </button>
                 </div>
+
                 {/* 선택된 어조의 예시 표시 */}
                 {/* 예시 설명 및 렌더링 */}
                 <div style={styles.examples}>
@@ -275,19 +264,29 @@ const PersonalizationModal = ({
             </>
           )}
         </div>
+
+        {/* 업로드 모달 부분 수정 - 새로운 어조가 추가되면 현재 연락처의 tonesInfo에도 추가 */}
         {showUploadModal && (
           <UploadToneModal
             onClose={() => setShowUploadModal(false)}
+            friendId={currentContact?.id}
             onToneGenerated={(newTone) => {
-              // tonesobj가 state일 경우 setTones([...tones, newTone]) 해야 함
-              tones.push(newTone); // 현재 구조 기준
+              // 현재 연락처의 tonesInfo에 새 어조 추가
+              if (currentContact && currentContact.tonesInfo) {
+                currentContact.tonesInfo.push({
+                  id: Date.now(), // 임시 ID 생성
+                  name: newTone.label,
+                  default: false,
+                });
+              }
               setSelectedTones((prev) => ({
                 ...prev,
-                [currentContact.id]: newTone.instruction,
+                [currentContact.id]: newTone.label,
               }));
             }}
           />
         )}
+
         {/* 오른쪽 영역 */}
         <div style={styles.rightSection}>
           <div style={styles.convertSection}>
