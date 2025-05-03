@@ -262,7 +262,7 @@ const ContactList = ({
                       }
                     : styles.personalizeButton
                 }
-                onClick={() => navigate("/contact-form")}
+                onClick={() => navigate(`/contact-form/${memberId}`)}
                 onMouseEnter={() => setIsAddContactHovered(true)}
                 onMouseLeave={() => setIsAddContactHovered(false)}
               >
