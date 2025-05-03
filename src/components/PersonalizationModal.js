@@ -269,6 +269,7 @@ const PersonalizationModal = ({
         {showUploadModal && (
           <UploadToneModal
             onClose={() => setShowUploadModal(false)}
+            friendId={currentContact?.id}
             onToneGenerated={(newTone) => {
               // 현재 연락처의 tonesInfo에 새 어조 추가
               if (currentContact && currentContact.tonesInfo) {
