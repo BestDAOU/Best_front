@@ -13,14 +13,14 @@ const Header = () => {
     localStorage.removeItem("memberName");
     setUser(null); // 유저 정보 제거
     alert("로그아웃 되었습니다.");
-    navigate("/login"); // 홈으로 이동
+    navigate("/"); // 홈으로 이동
   };
 
   return (
     <header style={styles.header}>
       {/* 왼쪽: 로고 */}
       <div style={styles.leftSection}>
-        <Link to="/main" style={styles.logoLink}>
+        <Link to="/" style={styles.logoLink}>
           <img src={logo} alt="Logo" style={styles.logo} />
         </Link>
       </div>
