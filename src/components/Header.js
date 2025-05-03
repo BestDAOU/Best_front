@@ -18,7 +18,7 @@ const Header = () => {
     <header style={styles.header}>
       {/* 왼쪽: 로고 */}
       <div style={styles.leftSection}>
-        <Link to="/" style={styles.logoLink}>
+        <Link to="/main" style={styles.logoLink}>
           <img src={logo} alt="Logo" style={styles.logo} />
         </Link>
       </div>
