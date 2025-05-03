@@ -12,7 +12,6 @@ import {
 } from "react-icons/fa";
 import PersonalizationModal from "./PersonalizationModal";
 import { useNavigate } from "react-router-dom";
-import tonesobj from "../data/tones.json";
 import { useSelector } from "react-redux";
 import { getFriendsByMemberId } from "../services/FriendsService"; // ✅ DB API 호출
 
@@ -25,7 +24,6 @@ const ContactList = ({
   memberId, // ✅ 이걸 꼭 전달해야 함
 }) => {
   // 상태 관련 코드는 변경 없음
-  const tones = tonesobj;
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedContactId, setExpandedContactId] = useState(null);
@@ -49,6 +47,7 @@ const ContactList = ({
           tone: item.tones,
           memo: item.memos,
           group: item.groupName || "기본", // group 필드 없을 경우 대비
+          tonesInfo: item.tonesInfo || [], // tonesInfo 추가
         }));
         setContacts(mappedContacts);
       } catch (error) {
@@ -187,8 +186,11 @@ const ContactList = ({
     setEditData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleToneSelection = (tone) => {
-    setEditData((prevData) => ({ ...prevData, tone: tone }));
+  const handleToneSelection = (toneName) => {
+    setEditData((prevData) => ({
+      ...prevData,
+      tone: toneName, // 하나의 어조만 설정
+    }));
   };
 
   // 여기서부터 JSX 반환 부분이 바뀝니다
@@ -410,25 +412,27 @@ const ContactList = ({
                             <strong>어조 선택:</strong>
                           </p>
                           <div style={styles.toneButtons}>
-                            {tones.map((tone) => (
-                              <button
-                                key={tone.label}
-                                onClick={() => handleToneSelection(tone.label)}
-                                style={{
-                                  ...styles.toneButton,
-                                  backgroundColor:
-                                    editData.tone === tone.label
-                                      ? "#007bff"
-                                      : "#ccc",
-                                  color:
-                                    editData.tone === tone.label
-                                      ? "white"
-                                      : "black",
-                                }}
-                              >
-                                {tone.label}
-                              </button>
-                            ))}
+                            {/* 해당 연락처의 tonesInfo 사용 */}
+                            {contact.tonesInfo &&
+                              contact.tonesInfo.map((tone) => (
+                                <button
+                                  key={tone.id}
+                                  onClick={() => handleToneSelection(tone.name)}
+                                  style={{
+                                    ...styles.toneButton,
+                                    backgroundColor:
+                                      editData.tone === tone.name // includes 대신 === 사용
+                                        ? "#007bff"
+                                        : "#ccc",
+                                    color:
+                                      editData.tone === tone.name // includes 대신 === 사용
+                                        ? "white"
+                                        : "black",
+                                  }}
+                                >
+                                  {tone.name}
+                                </button>
+                              ))}
                           </div>
                         </>
                       ) : (
@@ -439,9 +443,15 @@ const ContactList = ({
                           <p>
                             <strong>메모:</strong> {contact.memo}
                           </p>
+                          {/* 어조 표시 개선: 어조를 태그 형태로 표시 */}
                           <p>
-                            <strong>어조:</strong> {contact.tone}
+                            <strong>어조:</strong>
                           </p>
+                          <div style={styles.toneButtonsReadOnly}>
+                            {contact.tonesInfo && contact.tone && (
+                              <span style={styles.toneTag}>{contact.tone}</span>
+                            )}
+                          </div>
                         </>
                       )}
                     </div>
