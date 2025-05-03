@@ -45,10 +45,10 @@ const ContactList = ({
           name: item.friendName,
           phone: item.friendPhone,
           email: item.friendEmail,
-          tag: item.features,     // features → tag
+          tag: item.features, // features → tag
           tone: item.tones,
           memo: item.memos,
-          group: item.group || "기본", // group 필드 없을 경우 대비
+          group: item.groupName || "기본", // group 필드 없을 경우 대비
         }));
         setContacts(mappedContacts);
       } catch (error) {
@@ -241,9 +241,9 @@ const ContactList = ({
                 style={
                   isPersonalizeHovered
                     ? {
-                      ...styles.personalizeButton,
-                      ...styles.personalizeButtonHover,
-                    }
+                        ...styles.personalizeButton,
+                        ...styles.personalizeButtonHover,
+                      }
                     : styles.personalizeButton
                 }
                 onClick={openModal}
@@ -257,9 +257,9 @@ const ContactList = ({
                 style={
                   isAddContactHovered
                     ? {
-                      ...styles.personalizeButton,
-                      ...styles.personalizeButtonHover,
-                    }
+                        ...styles.personalizeButton,
+                        ...styles.personalizeButtonHover,
+                      }
                     : styles.personalizeButton
                 }
                 onClick={() => navigate(`/contact-form/${memberId}`)}
@@ -280,7 +280,7 @@ const ContactList = ({
               onComplete={() => setIsModalOpen(false)}
               setContacts={setContacts}
               message={message}
-            //
+              //
             />
           )}
 

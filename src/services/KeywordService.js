@@ -13,13 +13,18 @@ const API_BASE_URL =
 export const extractKeywordsFromServer = async (message) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/keywords/extract`, {
-      message,
+      messageContent: message,
     });
 
-    // 서버에서 단일 키워드 반환 (문자열)
-    return response.data.keyword;
+    // ✅ 서버 응답 구조에 맞춰 수정
+    const keywords = response.data.result?.keywords || [];
+
+    return keywords;
   } catch (error) {
-    console.error("키워드 추출 서비스 오류:", error);
+    console.error(
+      "키워드 추출 서비스 오류:",
+      error?.response?.data || error.message
+    );
     throw new Error("키워드 추출에 실패했습니다.");
   }
 };
