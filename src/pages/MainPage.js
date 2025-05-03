@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { extractKeywordsFromServer } from "../services/KeywordService";
+import { useEffect, useRef } from "react"; // 추가
 
 // 현재 시간을 기준으로 가장 가까운 5분 단위의 시간 계산
 const getInitialReserveTime = () => {
@@ -80,6 +81,35 @@ const MainPage = () => {
 
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false); //달력 창 열고 닫기 위한 변수
   const formattedDate = reserveDate ? format(reserveDate, "yyyy-MM-dd") : ""; // 년-월-일 형식으로 변환
+
+  const [activeDropdown, setActiveDropdown] = useState(null);
+
+  const datePickerRef = useRef(null); // 📌 DayPicker 감지용 ref
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        datePickerRef.current &&
+        !datePickerRef.current.contains(event.target)
+      ) {
+        setActiveDropdown(null); // 외부 클릭 시 닫음
+      }
+    };
+
+    if (activeDropdown === "date") {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [activeDropdown]);
+
+  const toggleDropdown = (type) => {
+    setActiveDropdown((prev) => (prev === type ? null : type));
+  };
 
   // 날짜 선택되면 값 저장 후 닫기
   const handleDateSelect = (date) => {
@@ -506,13 +536,15 @@ const MainPage = () => {
                 <input
                   type="text"
                   value={formattedDate}
-                  onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                  // onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                  onClick={() => toggleDropdown("date")}
                   readOnly
                   placeholder="날짜 선택"
                   style={styles.datePicker}
                 />
-                {isDatePickerOpen && (
+                {activeDropdown === "date" && (
                   <div
+                    ref={datePickerRef} // ref 연결
                     style={{
                       position: "absolute",
                       zIndex: 10,
@@ -527,7 +559,11 @@ const MainPage = () => {
                     <DayPicker
                       mode="single"
                       selected={reserveDate}
-                      onSelect={handleDateSelect}
+                      // onSelect={handleDateSelect}
+                      onSelect={(date) => {
+                        setReserveDate(date);
+                        setActiveDropdown(null); // 닫기
+                      }}
                     />
                   </div>
                 )}
@@ -537,7 +573,14 @@ const MainPage = () => {
                 <Select
                   options={hourOptions}
                   value={hourOptions.find((opt) => opt.value === reserveHour)}
-                  onChange={(selected) => setReserveHour(selected.value)}
+                  // onChange={(selected) => setReserveHour(selected.value)}
+                  onChange={(selected) => {
+                    setReserveHour(selected.value);
+                    setActiveDropdown(null);
+                  }}
+                  onMenuOpen={() => toggleDropdown("hour")}
+                  onMenuClose={() => setActiveDropdown(null)}
+                  menuIsOpen={activeDropdown === "hour"}
                   styles={customSelectStyles}
                   placeholder="시 선택"
                 />
@@ -549,7 +592,14 @@ const MainPage = () => {
                   value={minuteOptions.find(
                     (opt) => opt.value === reserveMinute
                   )}
-                  onChange={(selected) => setReserveMinute(selected.value)}
+                  // onChange={(selected) => setReserveMinute(selected.value)}
+                  onChange={(selected) => {
+                    setReserveMinute(selected.value);
+                    setActiveDropdown(null);
+                  }}
+                  onMenuOpen={() => toggleDropdown("minute")}
+                  onMenuClose={() => setActiveDropdown(null)}
+                  menuIsOpen={activeDropdown === "minute"}
                   styles={customSelectStyles}
                   placeholder="분 선택"
                 />
