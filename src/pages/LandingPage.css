@@ -3,6 +3,7 @@
 /* 기본 레이아웃 */
 .min-h-screen {
     min-height: 100vh;
+    margin-top: 70px;
   }
   
   .bg-gradient-to-b {

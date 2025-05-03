@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
-// import appScreenshot from '../assets/images/app-screenshot.png';
+import appScreenshot from '../assets/images/app-screenshot.png';
 
 const LandingPage = () => {
   const [isHovered, setIsHovered] = useState(false);
@@ -167,15 +167,23 @@ const LandingPage = () => {
             </div>
 
             {/* 이미지 섹션 수정 - 그라데이션과 이미지 크기 조정 */}
-            <div className="md:w-1/2">
+            {/* <div className="md:w-1/2">
               <div className="rounded-xl overflow-hidden shadow-xl">
-                {/* <img
+                <img
                   src={appScreenshot}
                   alt="BESTDAOU 앱 스크린샷"
                   className="w-full h-auto"
-                /> */}
+                />
               </div>
-            </div>
+            </div> */}
+            {/* 이미지 박스 */}
+<div className="md:w-1/2 flex justify-center">
+  <img
+    src={appScreenshot}
+    alt="BESTDAOU 앱 스크린샷"
+    className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-[420px] h-auto"
+  />
+</div>
 
 
 
