@@ -127,19 +127,19 @@ const MainPage = () => {
       setIsLoading(true); // 로딩 상태 활성화
 
       // 서버 API를 호출하여 키워드 추출
-      // const extractedKeywords = await extractKeywordsFromServer(message);
+      const extractedKeywords = await extractKeywordsFromServer(message);
 
-      // if (!extractedKeywords || extractedKeywords.length === 0) {
-      //   alert("키워드를 추출하지 못했습니다. 메시지를 확인해주세요.");
-      //   return;
-      // }
+      if (!extractedKeywords || extractedKeywords.length === 0) {
+        alert("키워드를 추출하지 못했습니다. 메시지를 확인해주세요.");
+        return;
+      }
 
-      // const keyword = extractedKeywords[0];
-      // console.log("추출된 키워드:", keyword);
+      const keyword = extractedKeywords[0];
+      console.log("추출된 키워드:", keyword);
 
-      // // 이미지 생성 페이지로 이동
-      // navigate("/image-generation", { state: { message, keyword } });
-      navigate("/image-generation", { state: { message } });
+      // 이미지 생성 페이지로 이동
+      navigate("/image-generation", { state: { message, keyword } });
+      // navigate("/image-generation", { state: { message } });
     } catch (error) {
       console.error("키워드 추출 중 오류 발생:", error);
       alert("키워드 추출에 실패했습니다. 다시 시도해주세요.");
