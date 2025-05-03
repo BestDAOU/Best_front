@@ -20,7 +20,6 @@ const getInitialReserveTime = () => {
   const now = new Date();
   const roundedMinutes = Math.ceil(now.getMinutes() / 5) * 5;
 
-
   let hour = now.getHours();
   let minute = roundedMinutes;
   let date = new Date(now);
@@ -53,7 +52,7 @@ const MainPage = () => {
   const location = useLocation();
 
   const loginMemberId = localStorage.getItem("memberId");
-  console.log("login : ", loginMemberId)
+  console.log("login : ", loginMemberId);
   // 전달된 state에서 메시지와 이미지를 추출
   const messageFromState = location.state?.message || "";
   const [message, setMessage] = useState(messageFromState);
@@ -301,8 +300,9 @@ const MainPage = () => {
 
               {/* 현재 수신자 인덱스 및 이름 표시 */}
               <p style={styles.contactInfo}>
-                {`수신자 ${currentContactIndex + 1} / ${selectedContacts.length
-                  } : ${selectedContacts[currentContactIndex].name}`}
+                {`수신자 ${currentContactIndex + 1} / ${
+                  selectedContacts.length
+                } : ${selectedContacts[currentContactIndex].name}`}
               </p>
 
               {/* 이전/다음 버튼 */}
@@ -391,9 +391,9 @@ const MainPage = () => {
                   style={
                     isDeleteButtonHovered
                       ? {
-                        ...styles.imageDeleteButton,
-                        ...styles.imageDeleteButtonHover,
-                      }
+                          ...styles.imageDeleteButton,
+                          ...styles.imageDeleteButtonHover,
+                        }
                       : styles.imageDeleteButton
                   }
                   onClick={() => {
@@ -415,10 +415,10 @@ const MainPage = () => {
                     style={
                       isDeleteButtonHovered
                         ? {
-                          ...styles.imageRestoreButton,
+                            ...styles.imageRestoreButton,
 
-                          ...styles.imageRestoreButtonHover,
-                        }
+                            ...styles.imageRestoreButtonHover,
+                          }
                         : styles.imageRestoreButton
                     }
                     onClick={() => {
@@ -739,7 +739,7 @@ const styles = {
     maxWidth: "1200px",
     boxSizing: "border-box",
     padding: "0", // 패딩 제거 또는 줄이기
-    overflow: "hidden", // 추가
+    overflow: "visible", // 추가
   },
   sendButtonContainer: {
     display: "flex",
