@@ -75,7 +75,7 @@ const AppContent = () => {
             }
           />
           <Route
-            path="/contact-form"
+            path="/contact-form/:memberId"
             element={
               <ProtectedRoute>
                 <ContactForm />

@@ -14,11 +14,12 @@ import { format } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { extractKeywordsFromServer } from "../services/KeywordService";
+import { useEffect, useRef } from "react"; // 추가
+
 // 현재 시간을 기준으로 가장 가까운 5분 단위의 시간 계산
 const getInitialReserveTime = () => {
   const now = new Date();
   const roundedMinutes = Math.ceil(now.getMinutes() / 5) * 5;
-
 
   let hour = now.getHours();
   let minute = roundedMinutes;
@@ -80,7 +81,34 @@ const MainPage = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false); //달력 창 열고 닫기 위한 변수
   const formattedDate = reserveDate ? format(reserveDate, "yyyy-MM-dd") : ""; // 년-월-일 형식으로 변환
 
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
+  const datePickerRef = useRef(null); // 📌 DayPicker 감지용 ref
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        datePickerRef.current &&
+        !datePickerRef.current.contains(event.target)
+      ) {
+        setActiveDropdown(null); // 외부 클릭 시 닫음
+      }
+    };
+
+    if (activeDropdown === "date") {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [activeDropdown]);
+
+  const toggleDropdown = (type) => {
+    setActiveDropdown((prev) => (prev === type ? null : type));
+  };
   // 날짜 선택되면 값 저장 후 닫기
   const handleDateSelect = (date) => {
     setReserveDate(date);
@@ -97,19 +125,19 @@ const MainPage = () => {
       setIsLoading(true); // 로딩 상태 활성화
 
       // 서버 API를 호출하여 키워드 추출
-      // const extractedKeywords = await extractKeywordsFromServer(message);
+      const extractedKeywords = await extractKeywordsFromServer(message);
 
-      // if (!extractedKeywords || extractedKeywords.length === 0) {
-      //   alert("키워드를 추출하지 못했습니다. 메시지를 확인해주세요.");
-      //   return;
-      // }
+      if (!extractedKeywords || extractedKeywords.length === 0) {
+        alert("키워드를 추출하지 못했습니다. 메시지를 확인해주세요.");
+        return;
+      }
 
-      // const keyword = extractedKeywords[0];
-      // console.log("추출된 키워드:", keyword);
+      const keyword = extractedKeywords[0];
+      console.log("추출된 키워드:", keyword);
 
-      // // 이미지 생성 페이지로 이동
-      // navigate("/image-generation", { state: { message, keyword } });
-      navigate("/image-generation", { state: { message } });
+      // 이미지 생성 페이지로 이동
+      navigate("/image-generation", { state: { message, keyword } });
+      // navigate("/image-generation", { state: { message } });
     } catch (error) {
       console.error("키워드 추출 중 오류 발생:", error);
       alert("키워드 추출에 실패했습니다. 다시 시도해주세요.");
@@ -300,8 +328,9 @@ const MainPage = () => {
 
               {/* 현재 수신자 인덱스 및 이름 표시 */}
               <p style={styles.contactInfo}>
-                {`수신자 ${currentContactIndex + 1} / ${selectedContacts.length
-                  } : ${selectedContacts[currentContactIndex].name}`}
+                {`수신자 ${currentContactIndex + 1} / ${
+                  selectedContacts.length
+                } : ${selectedContacts[currentContactIndex].name}`}
               </p>
 
               {/* 이전/다음 버튼 */}
@@ -390,9 +419,9 @@ const MainPage = () => {
                   style={
                     isDeleteButtonHovered
                       ? {
-                        ...styles.imageDeleteButton,
-                        ...styles.imageDeleteButtonHover,
-                      }
+                          ...styles.imageDeleteButton,
+                          ...styles.imageDeleteButtonHover,
+                        }
                       : styles.imageDeleteButton
                   }
                   onClick={() => {
@@ -414,10 +443,10 @@ const MainPage = () => {
                     style={
                       isDeleteButtonHovered
                         ? {
-                          ...styles.imageRestoreButton,
+                            ...styles.imageRestoreButton,
 
-                          ...styles.imageRestoreButtonHover,
-                        }
+                            ...styles.imageRestoreButtonHover,
+                          }
                         : styles.imageRestoreButton
                     }
                     onClick={() => {
@@ -505,13 +534,15 @@ const MainPage = () => {
                 <input
                   type="text"
                   value={formattedDate}
-                  onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                  // onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                  onClick={() => toggleDropdown("date")}
                   readOnly
                   placeholder="날짜 선택"
                   style={styles.datePicker}
                 />
-                {isDatePickerOpen && (
+                {activeDropdown === "date" && (
                   <div
+                    ref={datePickerRef} // ref 연결
                     style={{
                       position: "absolute",
                       zIndex: 10,
@@ -526,7 +557,11 @@ const MainPage = () => {
                     <DayPicker
                       mode="single"
                       selected={reserveDate}
-                      onSelect={handleDateSelect}
+                      // onSelect={handleDateSelect}
+                      onSelect={(date) => {
+                        setReserveDate(date);
+                        setActiveDropdown(null); // 닫기
+                      }}
                     />
                   </div>
                 )}
@@ -536,7 +571,14 @@ const MainPage = () => {
                 <Select
                   options={hourOptions}
                   value={hourOptions.find((opt) => opt.value === reserveHour)}
-                  onChange={(selected) => setReserveHour(selected.value)}
+                  // onChange={(selected) => setReserveHour(selected.value)}
+                  onChange={(selected) => {
+                    setReserveHour(selected.value);
+                    setActiveDropdown(null);
+                  }}
+                  onMenuOpen={() => toggleDropdown("hour")}
+                  onMenuClose={() => setActiveDropdown(null)}
+                  menuIsOpen={activeDropdown === "hour"}
                   styles={customSelectStyles}
                   placeholder="시 선택"
                 />
@@ -548,7 +590,14 @@ const MainPage = () => {
                   value={minuteOptions.find(
                     (opt) => opt.value === reserveMinute
                   )}
-                  onChange={(selected) => setReserveMinute(selected.value)}
+                  // onChange={(selected) => setReserveMinute(selected.value)}
+                  onChange={(selected) => {
+                    setReserveMinute(selected.value);
+                    setActiveDropdown(null);
+                  }}
+                  onMenuOpen={() => toggleDropdown("minute")}
+                  onMenuClose={() => setActiveDropdown(null)}
+                  menuIsOpen={activeDropdown === "minute"}
                   styles={customSelectStyles}
                   placeholder="분 선택"
                 />
@@ -745,7 +794,7 @@ const styles = {
     maxWidth: "1200px",
     boxSizing: "border-box",
     padding: "0", // 패딩 제거 또는 줄이기
-    overflow: "hidden", // 추가
+    overflow: "visible", // 추가
   },
   sendButtonContainer: {
     display: "flex",

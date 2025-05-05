@@ -4,8 +4,10 @@ import { addContact } from "../store/contactsSlice";
 import { useNavigate } from "react-router-dom";
 import tones from "../data/tones.json"; // tones.json import
 import { addFriend, getFriendsByMemberId } from "../services/FriendsService";
+import { useParams } from "react-router-dom";
 
-const ContactForm = ({ memberId }) => {
+const ContactForm = () => {
+  const { memberId } = useParams();
   const [contactList, setContactList] = useState([]);
   const [contact, setContact] = useState({
     name: "",
@@ -100,6 +102,7 @@ const ContactForm = ({ memberId }) => {
 
     setContactList((prevList) => [...prevList, contact]); // 로컬 상태에 추가
     setContact({
+      memberId: memberId,
       name: "",
       phone: "",
       nickname: "",
@@ -122,30 +125,65 @@ const ContactForm = ({ memberId }) => {
       alert("추가된 연락처가 없습니다.");
       return;
     }
-
+  
     try {
       for (const contact of contactList) {
+        // RelationType을 백엔드에서 허용하는 값으로 매핑
+        let relationTypeValue = "FRIEND"; // 기본값으로 'FRIEND' 사용
+        
+        // 관계에 따른 RelationType 매핑 (이 부분은 백엔드의 열거형 값에 따라 조정 필요)
+        if (contact.nickname && contact.nickname.includes("가족")) {
+          relationTypeValue = "FAMILY";
+        } else if (contact.nickname && contact.nickname.includes("동료")) {
+          relationTypeValue = "COLLEAGUE"; 
+        }
+        
+        // FriendsDto에 맞게 페이로드 구성
         const payload = {
+          id: 1, // 서버에서 자동 생성되므로 임시로 1로 설정
           friendName: contact.name,
           friendPhone: contact.phone,
-          friendEmail: contact.email,
-          features: contact.tag,
-          memos: contact.memo,
-          tones: contact.tone,
-          groupName: contact.group,
-          relationType: contact.nickname || "FRIEND", // Enum 형식이면 FRIEND, FAMILY 등으로 매핑 필요
+          friendEmail: contact.email || "",
+          features: contact.tag || "",
+          memos: contact.memo || "",
+          tones: contact.tone || "일반",
+          tones_prompt: "{\"label\":\"친근한 말투\",\"instruction\":\"상대방과 친밀한 관계를 나타내는 말투로 말하세요.\",\"examples\":[\"안녕, 잘 지냈어?\"]}",
+          groupName: contact.group || "기본",
+          relationType: relationTypeValue,
+          member_id: parseInt(memberId) // 이 필드가 반드시 포함되어야 함
         };
-
-        await addFriend(memberId, payload);
+  
+        console.log("서버에 전송하는 데이터:", JSON.stringify(payload, null, 2));
+        console.log("멤버 ID:", memberId);
+        
+        try {
+          // 실제 전송되는 데이터를 확인하기 위한 디버깅 코드
+          const response = await addFriend(memberId, payload);
+          console.log("서버 응답:", response.data);
+        } catch (error) {
+          console.error("API 오류 세부 정보:", {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            payload
+          });
+          throw error;
+        }
       }
-
+  
       alert("연락처가 성공적으로 저장되었습니다!");
-      navigate("/");
+      navigate("/main");
     } catch (error) {
       console.error("연락처 저장 오류:", error);
-      alert("연락처 저장에 실패했습니다.");
+      
+      if (error.response?.data?.message) {
+        alert(`연락처 저장에 실패했습니다: ${error.response.data.message}`);
+      } else {
+        alert("연락처 저장에 실패했습니다. 서버 오류가 발생했습니다.");
+      }
     }
   };
+  
   return (
     <div style={styles.container}>
       {/* 왼쪽: 연락처 추가 폼 */}

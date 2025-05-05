@@ -12,7 +12,6 @@ import {
 } from "react-icons/fa";
 import PersonalizationModal from "./PersonalizationModal";
 import { useNavigate } from "react-router-dom";
-import tonesobj from "../data/tones.json";
 import { useSelector } from "react-redux";
 import { getFriendsByMemberId } from "../services/FriendsService"; // ✅ DB API 호출
 
@@ -25,13 +24,17 @@ const ContactList = ({
   memberId, // ✅ 이걸 꼭 전달해야 함
 }) => {
   // 상태 관련 코드는 변경 없음
-  const tones = tonesobj;
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedContactId, setExpandedContactId] = useState(null);
   const [isAllChecked, setIsAllChecked] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
-  const [editData, setEditData] = useState({ tag: "", memo: "", tone: "" });
+  const [editData, setEditData] = useState({
+    tag: "",
+    memo: "",
+    tone: "",
+    selectedToneId: null,
+  });
 
   const contactsobj = useSelector((state) => state.contacts); // Redux에서 상태 가져오기
   const [contacts, setContacts] = useState([]);
@@ -45,10 +48,15 @@ const ContactList = ({
           name: item.friendName,
           phone: item.friendPhone,
           email: item.friendEmail,
-          tag: item.features,     // features → tag
-          tone: item.tones,
+          tag: item.features, // features → tag
+          tone: item.selectedToneId
+            ? item.tonesInfo.find((t) => t.id === item.selectedToneId)?.name ||
+              ""
+            : "",
           memo: item.memos,
-          group: item.group || "기본", // group 필드 없을 경우 대비
+          group: item.groupName || "기본", // group 필드 없을 경우 대비
+          tonesInfo: item.tonesInfo || [], // tonesInfo 추가
+          selectedToneId: item.selectedToneId || null, // selectedToneId 추가
         }));
         setContacts(mappedContacts);
       } catch (error) {
@@ -164,6 +172,7 @@ const ContactList = ({
       tag: contact.tag,
       memo: contact.memo,
       tone: contact.tone,
+      selectedToneId: contact.selectedToneId, // selectedToneId 추가
     });
   };
 
@@ -187,8 +196,13 @@ const ContactList = ({
     setEditData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleToneSelection = (tone) => {
-    setEditData((prevData) => ({ ...prevData, tone: tone }));
+  // 수정: tone 선택시 selectedToneId도 함께 업데이트
+  const handleToneSelection = (toneId, toneName) => {
+    setEditData((prevData) => ({
+      ...prevData,
+      tone: toneName,
+      selectedToneId: toneId,
+    }));
   };
 
   // 여기서부터 JSX 반환 부분이 바뀝니다
@@ -241,9 +255,9 @@ const ContactList = ({
                 style={
                   isPersonalizeHovered
                     ? {
-                      ...styles.personalizeButton,
-                      ...styles.personalizeButtonHover,
-                    }
+                        ...styles.personalizeButton,
+                        ...styles.personalizeButtonHover,
+                      }
                     : styles.personalizeButton
                 }
                 onClick={openModal}
@@ -257,12 +271,12 @@ const ContactList = ({
                 style={
                   isAddContactHovered
                     ? {
-                      ...styles.personalizeButton,
-                      ...styles.personalizeButtonHover,
-                    }
+                        ...styles.personalizeButton,
+                        ...styles.personalizeButtonHover,
+                      }
                     : styles.personalizeButton
                 }
-                onClick={() => navigate("/contact-form")}
+                onClick={() => navigate(`/contact-form/${memberId}`)}
                 onMouseEnter={() => setIsAddContactHovered(true)}
                 onMouseLeave={() => setIsAddContactHovered(false)}
               >
@@ -280,7 +294,7 @@ const ContactList = ({
               onComplete={() => setIsModalOpen(false)}
               setContacts={setContacts}
               message={message}
-            //
+              //
             />
           )}
 
@@ -410,25 +424,29 @@ const ContactList = ({
                             <strong>어조 선택:</strong>
                           </p>
                           <div style={styles.toneButtons}>
-                            {tones.map((tone) => (
-                              <button
-                                key={tone.label}
-                                onClick={() => handleToneSelection(tone.label)}
-                                style={{
-                                  ...styles.toneButton,
-                                  backgroundColor:
-                                    editData.tone === tone.label
-                                      ? "#007bff"
-                                      : "#ccc",
-                                  color:
-                                    editData.tone === tone.label
-                                      ? "white"
-                                      : "black",
-                                }}
-                              >
-                                {tone.label}
-                              </button>
-                            ))}
+                            {/* 해당 연락처의 tonesInfo 사용 */}
+                            {contact.tonesInfo &&
+                              contact.tonesInfo.map((tone) => (
+                                <button
+                                  key={tone.id}
+                                  onClick={() =>
+                                    handleToneSelection(tone.id, tone.name)
+                                  }
+                                  style={{
+                                    ...styles.toneButton,
+                                    backgroundColor:
+                                      editData.selectedToneId === tone.id
+                                        ? "#007bff"
+                                        : "#ccc",
+                                    color:
+                                      editData.selectedToneId === tone.id
+                                        ? "white"
+                                        : "black",
+                                  }}
+                                >
+                                  {tone.name}
+                                </button>
+                              ))}
                           </div>
                         </>
                       ) : (
@@ -439,8 +457,21 @@ const ContactList = ({
                           <p>
                             <strong>메모:</strong> {contact.memo}
                           </p>
+
                           <p>
-                            <strong>어조:</strong> {contact.tone}
+                            <strong>어조:</strong>{" "}
+                            {contact.selectedToneId && (
+                              <span
+                                style={{
+                                  ...styles.toneTag,
+                                  display: "inline-block",
+                                }}
+                              >
+                                {contact.tonesInfo.find(
+                                  (t) => t.id === contact.selectedToneId
+                                )?.name || ""}
+                              </span>
+                            )}
                           </p>
                         </>
                       )}
