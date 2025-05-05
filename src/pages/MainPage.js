@@ -53,7 +53,6 @@ const MainPage = () => {
   const location = useLocation();
 
   const loginMemberId = localStorage.getItem("memberId");
-  console.log("login : ", loginMemberId);
   // 전달된 state에서 메시지와 이미지를 추출
   const messageFromState = location.state?.message || "";
   const [message, setMessage] = useState(messageFromState);
@@ -110,7 +109,6 @@ const MainPage = () => {
   const toggleDropdown = (type) => {
     setActiveDropdown((prev) => (prev === type ? null : type));
   };
-
   // 날짜 선택되면 값 저장 후 닫기
   const handleDateSelect = (date) => {
     setReserveDate(date);
@@ -618,6 +616,13 @@ const MainPage = () => {
           </button>
         </div>
       </div>
+
+      {/* 플로팅 챗봇 버튼 */}
+      {/* <ChatbotButton onClick={toggleChatbot} /> */}
+
+      {/* 챗봇 창 */}
+      {/* {showChatbot && <ChatbotContainer onClose={toggleChatbot} />}
+       */}
     </div>
   );
 };
