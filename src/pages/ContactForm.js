@@ -19,6 +19,7 @@ const ContactForm = () => {
     tone: tones[0].label, // 기본값 설정,
     group: "찐친", // 기본값 설정
     profile: "https://via.placeholder.com/40", // 기본 이미지
+    relationType: "",
   });
 
   const [phoneError, setPhoneError] = useState("");
@@ -26,31 +27,6 @@ const ContactForm = () => {
   const [expandedMemos, setExpandedMemos] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   const fetchContacts = async () => {
-  //     try {
-  //       const response = await getFriendsByMemberId(memberId);
-  //       const serverContacts = response.data.map((friend) => ({
-  //         name: friend.friendName,
-  //         phone: friend.friendPhone,
-  //         email: friend.friendEmail,
-  //         tag: friend.features,
-  //         memo: friend.memos,
-  //         tone: friend.tones,
-  //         group: friend.groupName,
-  //         nickname: friend.relationType,
-  //         profile: "https://via.placeholder.com/40",
-  //       }));
-  //       setContactList(serverContacts);
-  //     } catch (error) {
-  //       console.error("서버에서 연락처를 불러오는 중 오류 발생:", error);
-  //     }
-  //   };
-
-  //   fetchContacts();
-  // }, [memberId]);
-
 
   // 특징 더보기/접기 토글
   const toggleExpandTag = (index) => {
@@ -125,19 +101,19 @@ const ContactForm = () => {
       alert("추가된 연락처가 없습니다.");
       return;
     }
-  
+
     try {
       for (const contact of contactList) {
         // RelationType을 백엔드에서 허용하는 값으로 매핑
         let relationTypeValue = "FRIEND"; // 기본값으로 'FRIEND' 사용
-        
+
         // 관계에 따른 RelationType 매핑 (이 부분은 백엔드의 열거형 값에 따라 조정 필요)
         if (contact.nickname && contact.nickname.includes("가족")) {
           relationTypeValue = "FAMILY";
         } else if (contact.nickname && contact.nickname.includes("동료")) {
-          relationTypeValue = "COLLEAGUE"; 
+          relationTypeValue = "COLLEAGUE";
         }
-        
+
         // FriendsDto에 맞게 페이로드 구성
         const payload = {
           id: 1, // 서버에서 자동 생성되므로 임시로 1로 설정
@@ -149,13 +125,13 @@ const ContactForm = () => {
           tones: contact.tone || "일반",
           tones_prompt: "{\"label\":\"친근한 말투\",\"instruction\":\"상대방과 친밀한 관계를 나타내는 말투로 말하세요.\",\"examples\":[\"안녕, 잘 지냈어?\"]}",
           groupName: contact.group || "기본",
-          relationType: relationTypeValue,
+          relationType: contact.relationType || "",
           member_id: parseInt(memberId) // 이 필드가 반드시 포함되어야 함
         };
-  
+
         console.log("서버에 전송하는 데이터:", JSON.stringify(payload, null, 2));
         console.log("멤버 ID:", memberId);
-        
+
         try {
           // 실제 전송되는 데이터를 확인하기 위한 디버깅 코드
           const response = await addFriend(memberId, payload);
@@ -170,12 +146,12 @@ const ContactForm = () => {
           throw error;
         }
       }
-  
+
       alert("연락처가 성공적으로 저장되었습니다!");
       navigate("/main");
     } catch (error) {
       console.error("연락처 저장 오류:", error);
-      
+
       if (error.response?.data?.message) {
         alert(`연락처 저장에 실패했습니다: ${error.response.data.message}`);
       } else {
@@ -183,7 +159,7 @@ const ContactForm = () => {
       }
     }
   };
-  
+
   return (
     <div style={styles.container}>
       {/* 왼쪽: 연락처 추가 폼 */}
@@ -218,9 +194,9 @@ const ContactForm = () => {
           <label>관계:</label>
           <input
             type="text"
-            name="nickname"
-            placeholder="닉네임 입력"
-            value={contact.nickname}
+            name="relationType"
+            placeholder="관계 입력"
+            value={contact.relationType}
             onChange={handleChange}
             style={styles.input}
           />

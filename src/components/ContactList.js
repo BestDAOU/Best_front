@@ -46,12 +46,13 @@ const ContactList = ({
         const mappedContacts = response.data.map((item) => ({
           id: item.id,
           name: item.friendName,
+          relationType: item.relationType,
           phone: item.friendPhone,
           email: item.friendEmail,
           tag: item.features, // features → tag
           tone: item.selectedToneId
             ? item.tonesInfo.find((t) => t.id === item.selectedToneId)?.name ||
-              ""
+            ""
             : "",
           memo: item.memos,
           group: item.groupName || "기본", // group 필드 없을 경우 대비
@@ -255,9 +256,9 @@ const ContactList = ({
                 style={
                   isPersonalizeHovered
                     ? {
-                        ...styles.personalizeButton,
-                        ...styles.personalizeButtonHover,
-                      }
+                      ...styles.personalizeButton,
+                      ...styles.personalizeButtonHover,
+                    }
                     : styles.personalizeButton
                 }
                 onClick={openModal}
@@ -271,9 +272,9 @@ const ContactList = ({
                 style={
                   isAddContactHovered
                     ? {
-                        ...styles.personalizeButton,
-                        ...styles.personalizeButtonHover,
-                      }
+                      ...styles.personalizeButton,
+                      ...styles.personalizeButtonHover,
+                    }
                     : styles.personalizeButton
                 }
                 onClick={() => navigate(`/contact-form/${memberId}`)}
@@ -294,7 +295,7 @@ const ContactList = ({
               onComplete={() => setIsModalOpen(false)}
               setContacts={setContacts}
               message={message}
-              //
+            //
             />
           )}
 
@@ -332,7 +333,7 @@ const ContactList = ({
                       style={styles.checkbox}
                     />
                     <span style={styles.name}>{contact.name}</span>
-                    <span style={styles.nickname}>{contact.nickname}</span>
+                    <span style={styles.relationType}>{contact.relationType}</span>
                     <span style={styles.email}>{contact.email}</span>
                     <span style={styles.phone}>{contact.phone}</span>
 
@@ -702,7 +703,7 @@ const styles = {
     width: "100px",
   },
 
-  nickname: {
+  relationType: {
     width: "100px",
   },
 
