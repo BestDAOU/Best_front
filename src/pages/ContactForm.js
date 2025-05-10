@@ -27,29 +27,29 @@ const ContactForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchContacts = async () => {
-      try {
-        const response = await getFriendsByMemberId(memberId);
-        const serverContacts = response.data.map((friend) => ({
-          name: friend.friendName,
-          phone: friend.friendPhone,
-          email: friend.friendEmail,
-          tag: friend.features,
-          memo: friend.memos,
-          tone: friend.tones,
-          group: friend.groupName,
-          nickname: friend.relationType,
-          profile: "https://via.placeholder.com/40",
-        }));
-        setContactList(serverContacts);
-      } catch (error) {
-        console.error("서버에서 연락처를 불러오는 중 오류 발생:", error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchContacts = async () => {
+  //     try {
+  //       const response = await getFriendsByMemberId(memberId);
+  //       const serverContacts = response.data.map((friend) => ({
+  //         name: friend.friendName,
+  //         phone: friend.friendPhone,
+  //         email: friend.friendEmail,
+  //         tag: friend.features,
+  //         memo: friend.memos,
+  //         tone: friend.tones,
+  //         group: friend.groupName,
+  //         nickname: friend.relationType,
+  //         profile: "https://via.placeholder.com/40",
+  //       }));
+  //       setContactList(serverContacts);
+  //     } catch (error) {
+  //       console.error("서버에서 연락처를 불러오는 중 오류 발생:", error);
+  //     }
+  //   };
 
-    fetchContacts();
-  }, [memberId]);
+  //   fetchContacts();
+  // }, [memberId]);
 
 
   // 특징 더보기/접기 토글
