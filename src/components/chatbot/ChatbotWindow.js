@@ -8,6 +8,10 @@ const ChatbotWindow = ({ onClose }) => {
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
+    const [pendingFriendParams, setPendingFriendParams] = useState(null); // 누락된 friend 정보 저장
+    const [awaitingField, setAwaitingField] = useState(null); // 어떤 필드를 기다리고 있는지
+    const [pendingMessageParams, setPendingMessageParams] = useState(null);
+    const [awaitingMessageOnly, setAwaitingMessageOnly] = useState(false);
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -18,8 +22,96 @@ const ChatbotWindow = ({ onClose }) => {
         setLoading(true);
 
         try {
+            // ✅ 메시지 내용만 기다리는 중이라면
+            if (awaitingMessageOnly && pendingMessageParams) {
+                const completedParams = {
+                    ...pendingMessageParams,
+                    message: input,
+                };
+
+                const finalResponse = await askToGPT(JSON.stringify({
+                    action: "send_message",
+                    params: completedParams,
+                }));
+
+                setMessages([...newMessages, { sender: "bot", text: finalResponse.response }]);
+                setPendingMessageParams(null);
+                setAwaitingMessageOnly(false);
+                setLoading(false);
+                return;
+            }
+
+            // ✅ 연락처 필드 입력 흐름
+            if (awaitingField && pendingFriendParams) {
+                const updatedParams = {
+                    ...pendingFriendParams,
+                    [awaitingField]: input,
+                };
+
+                const required = ["friendName", "friendPhone", "friendEmail", "features", "memos", "groupName", "relationType"];
+                const missing = required.filter(field => !updatedParams[field] || updatedParams[field].trim() === "");
+
+                if (missing.length > 0) {
+                    setPendingFriendParams(updatedParams);
+                    setAwaitingField(missing[0]);
+
+                    const fieldFriendlyNames = {
+                        friendName: "이름을 알려주세요 😊",
+                        friendPhone: "전화번호를 알려주세요 📱",
+                        friendEmail: "이메일 주소를 알려주세요 ✉️",
+                        features: "이 친구의 특징은 어떤가요?",
+                        memos: "기억해두고 싶은 내용을 말씀해주세요!",
+                        groupName: "이 친구는 어떤 그룹에 속하나요?",
+                        relationType: "관계 유형을 알려주세요 (예: 친구, 가족 등)",
+                    };
+
+                    setMessages([
+                        ...newMessages,
+                        { sender: "bot", text: fieldFriendlyNames[missing[0]] || `${missing[0]} 정보를 입력해주세요.` },
+                    ]);
+                } else {
+                    const finalResponse = await askToGPT(JSON.stringify({
+                        action: "add_friend",
+                        params: updatedParams,
+                    }));
+
+                    setMessages([
+                        ...newMessages,
+                        { sender: "bot", text: finalResponse.response },
+                    ]);
+                    setPendingFriendParams(null);
+                    setAwaitingField(null);
+                }
+
+                setLoading(false);
+                return;
+            }
+
+            // ✅ 일반 질문 처리
             const response = await askToGPT(input);
-            setMessages([...newMessages, { sender: "bot", text: response.response }]);
+
+            if (response.action === "missing_fields") {
+                if (response.missing.includes("message") && response.params) {
+                    // 메시지 누락 시 처리
+                    setPendingMessageParams(response.params);
+                    setAwaitingMessageOnly(true);
+                    setMessages([
+                        ...newMessages,
+                        { sender: "bot", text: "어떤 메시지를 보내고 싶으신가요? ✉️" },
+                    ]);
+                } else {
+                    // 연락처 필드 누락 시 처리
+                    setPendingFriendParams(response.params || {});
+                    setAwaitingField(response.missing[0]);
+
+                    setMessages([
+                        ...newMessages,
+                        { sender: "bot", text: response.message || `${response.missing[0]} 정보가 필요해요.` },
+                    ]);
+                }
+            } else {
+                setMessages([...newMessages, { sender: "bot", text: response.response || "처리되었습니다." }]);
+            }
         } catch (error) {
             setMessages([
                 ...newMessages,
