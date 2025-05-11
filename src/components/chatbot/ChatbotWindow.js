@@ -129,7 +129,7 @@ const ChatbotWindow = ({ onClose }) => {
     return (
         <div style={styles.window}>
             <div style={styles.header}>
-                <strong style={{ fontSize: "16px" }}>🤖 PicMessage 챗봇</strong>
+                <strong style={{ fontSize: "16px" }}>ForYou 챗봇</strong>
                 <button onClick={onClose} style={styles.closeButton}>
                     <FaTimes />
                 </button>
@@ -162,29 +162,27 @@ const ChatbotWindow = ({ onClose }) => {
             </div>
         </div>
     );
-};
-
-const styles = {
+}; const styles = {
     window: {
         position: "fixed",
         bottom: "90px",
         right: "20px",
         width: "360px",
         height: "500px",
-        backgroundColor: "#ffffff",
-        borderRadius: "12px",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+        background: "linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%)",
+        borderRadius: "16px",
+        boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)",
         display: "flex",
         flexDirection: "column",
         zIndex: 1000,
-        fontFamily: "'Segoe UI', sans-serif",
+        fontFamily: "'Apple SD Gothic Neo', 'Pretendard', sans-serif",
     },
     header: {
-        backgroundColor: "#4A90E2",
+        background: "linear-gradient(to right, #4A90E2, #007BFF)",
         color: "white",
         padding: "14px",
-        borderTopLeftRadius: "12px",
-        borderTopRightRadius: "12px",
+        borderTopLeftRadius: "16px",
+        borderTopRightRadius: "16px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
@@ -200,30 +198,31 @@ const styles = {
         flex: 1,
         padding: "16px",
         overflowY: "auto",
-        backgroundColor: "#fdfdfd",
+        backgroundColor: "#f9fafb",
         display: "flex",
         flexDirection: "column",
-        gap: "8px",
+        gap: "10px",
     },
     footer: {
         display: "flex",
         padding: "12px",
-        borderTop: "1px solid #e0e0e0",
-        backgroundColor: "#fafafa",
+        borderTop: "1px solid #e5e7eb",
+        backgroundColor: "#ffffff",
     },
     input: {
         flex: 1,
         padding: "10px 14px",
         borderRadius: "24px",
-        border: "1px solid #ccc",
+        border: "1px solid #d1d5db",
         fontSize: "14px",
         outline: "none",
+        backgroundColor: "#f3f4f6",
     },
     sendButton: {
-        backgroundColor: "#4A90E2",
+        background: "linear-gradient(to right, #4A90E2, #007BFF)",
         color: "white",
         border: "none",
-        padding: "10px 14px",
+        padding: "10px",
         marginLeft: "8px",
         borderRadius: "50%",
         cursor: "pointer",
@@ -231,23 +230,29 @@ const styles = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
     },
     message: {
         padding: "10px 14px",
-        borderRadius: "16px",
+        borderRadius: "18px",
         fontSize: "14px",
         maxWidth: "75%",
         wordWrap: "break-word",
+        lineHeight: "1.5",
     },
     userMessage: {
         alignSelf: "flex-end",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "white",
+        color: "#4B2991",
         borderTopRightRadius: "0px",
+        border: "1px solid #e5e7eb",
     },
     botMessage: {
         alignSelf: "flex-start",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#ffffff",
+        border: "1px solid #e5e7eb",
         borderTopLeftRadius: "0px",
+        color: "#374151",
     },
 };
 
