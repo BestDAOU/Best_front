@@ -328,9 +328,8 @@ const MainPage = () => {
 
               {/* 현재 수신자 인덱스 및 이름 표시 */}
               <p style={styles.contactInfo}>
-                {`수신자 ${currentContactIndex + 1} / ${
-                  selectedContacts.length
-                } : ${selectedContacts[currentContactIndex].name}`}
+                {`수신자 ${currentContactIndex + 1} / ${selectedContacts.length
+                  } : ${selectedContacts[currentContactIndex].name}`}
               </p>
 
               {/* 이전/다음 버튼 */}
@@ -360,7 +359,6 @@ const MainPage = () => {
               </div>
             </>
           ) : (
-            ////////////////////////////////////////////////////////////////////////////////////////////////////
             <>
               {/* 선택된 연락처가 없을 경우 기본 메시지 입력 */}
               <textarea
@@ -419,9 +417,9 @@ const MainPage = () => {
                   style={
                     isDeleteButtonHovered
                       ? {
-                          ...styles.imageDeleteButton,
-                          ...styles.imageDeleteButtonHover,
-                        }
+                        ...styles.imageDeleteButton,
+                        ...styles.imageDeleteButtonHover,
+                      }
                       : styles.imageDeleteButton
                   }
                   onClick={() => {
@@ -443,10 +441,10 @@ const MainPage = () => {
                     style={
                       isDeleteButtonHovered
                         ? {
-                            ...styles.imageRestoreButton,
+                          ...styles.imageRestoreButton,
 
-                            ...styles.imageRestoreButtonHover,
-                          }
+                          ...styles.imageRestoreButtonHover,
+                        }
                         : styles.imageRestoreButton
                     }
                     onClick={() => {
@@ -719,7 +717,7 @@ const styles = {
     marginRight: "10px", // 버튼과 약간의 간격 추가
   },
   messageButton: {
-    background: "#4A90E2",
+    background: "linear-gradient(to right, #4A90E2, #007BFF)",
     color: "white",
     border: "none",
     padding: "12px 25px",
@@ -731,7 +729,7 @@ const styles = {
     boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
   },
   messageButtonHover: {
-    background: "#007BFF",
+    background: "linear-gradient(to right, #007BFF, #4A90E2)",
     transform: "scale(1.05)",
     boxShadow: "0px 6px 8px rgba(0, 0, 0, 0.2)",
   },
@@ -935,12 +933,10 @@ const styles = {
     marginLeft: "20px", // 전송하기 버튼과 간격
   },
 
-  // Updated reserveSettingSection style
   reserveSettingSection: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    // backgroundColor: "#F0F4FA",
     backgroundColor: "#F0F4FA",
     padding: "20px",
     borderRadius: "12px",
