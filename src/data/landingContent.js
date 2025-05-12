@@ -1,6 +1,6 @@
 // src/data/landingContent.js
 export const hero = {
-    badge: 'BESTDAOU',
+    badge: 'BESTDAO',
     title: 'AI 맞춤 메시지로 관계를 더 깊게',
     sub1:
       '단체문자를 보내야 할 때마다 “형식적일까 봐” 고민하셨나요? \

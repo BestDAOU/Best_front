@@ -360,7 +360,7 @@ const LandingPage = () => {
             <div className="w-full md:w-1/2 flex justify-center">
               <img
                 src={appScreenshot}
-                alt="BESTDAOU 앱 스크린샷"
+                alt="BESTDAO 앱 스크린샷"
                 className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-[420px] h-auto object-contain"
               />
             </div>
@@ -461,7 +461,7 @@ const LandingPage = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-6 lg:mb-0 text-center md:text-left">
-              <h3 className="text-xl md:text-2xl font-bold mb-2">BESTDAOU</h3>
+              <h3 className="text-xl md:text-2xl font-bold mb-2">BESTDAO</h3>
               <p className="text-blue-200 text-sm md:text-base">안전하고 빠른 메시징 플랫폼</p>
             </div>
 
@@ -489,7 +489,7 @@ const LandingPage = () => {
           </div>
 
           <div className="border-t border-blue-800 mt-6 md:mt-8 pt-6 md:pt-8 text-center text-blue-300">
-            <p className="text-xs md:text-sm">© 2025 BESTDAOU. All rights reserved.</p>
+            <p className="text-xs md:text-sm">© 2025 BESTDAO. All rights reserved.</p>
           </div>
         </div>
       </footer>

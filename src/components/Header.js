@@ -26,7 +26,7 @@ const Header = () => {
       </div>
 
       {/* 가운데: 브랜드 이름 */}
-      <h1 style={styles.brand}>BESTDAOU</h1>
+      <h1 style={styles.brand}>BESTDAO</h1>
 
       {/* 오른쪽: 사용자 정보 및 버튼 */}
       <div style={styles.rightSection}>
