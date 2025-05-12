@@ -33,6 +33,7 @@ const ProtectedRoute = ({ children }) => {
 // App 콘텐츠 컴포넌트 (UserContext 사용을 위해 분리)
 const AppContent = () => {
   const { user } = useUser();
+  const location = useLocation();              // 현재 경로 확인
 
   return (
     <>
@@ -42,7 +43,8 @@ const AppContent = () => {
         onLogout={() => alert("로그아웃 기능은 현재 비활성화 상태입니다.")}
       />
       {/* 고정된 헤더 아래 내용 */}
-      <div style={{ marginTop: "60px" }}>
+      {/* <div style={{ marginTop: "60px" }}> */}
+      <div style={{ marginTop: location.pathname === '/' ? '0px' : '60px' }}>
         <Routes>
           {/* 공개 라우트 - 로그인 없이 접근 가능 */}
           <Route path="/" element={<LandingPage />} />
