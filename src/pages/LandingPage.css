@@ -735,12 +735,12 @@ html {
     align-items: center;
     justify-content: center;
     
-    /* 겉색상(밝은 블루)으로 통일된 배경 그라데이션 */
-    background: linear-gradient(135deg, 
-        #eff6ff 0%,    /* blue-50 */
-        #e0f2fe 20%,   /* sky-50 */  
-        #dbeafe 40%,   /* blue-100 */
-        #dbeafe 100%); /* blue-100 유지 */
+/* 겉색상(밝은 블루)으로 통일된 배경 그라데이션 */
+background: linear-gradient(135deg, 
+    #DEEBFE 0%,    /* 새로운 메인 색상 */
+    #DEEBFE 20%,   /* 동일 색상 유지 */
+    #DEEBFE 40%,   /* 동일 색상 유지 */
+    #DEEBFE 100%); /* 동일 색상 유지 */
 }
 
 .video-background-container {
@@ -794,31 +794,7 @@ html {
     left: 0;
     width: 100%;
     height: 100%;
-    
-    /* 밝은 블루 톤의 미묘한 오버레이 */
-    background: 
-        /* 상단 밝은 그라데이션 */
-        linear-gradient(180deg, 
-            rgba(239, 246, 255, 0.2) 0%,   /* blue-50 */
-            rgba(219, 234, 254, 0.1) 30%,  /* blue-100 */
-            transparent 60%
-        ),
-        /* 하단 밝은 그라데이션 */
-        linear-gradient(0deg, 
-            rgba(219, 234, 254, 0.3) 0%,   /* blue-100 */
-            rgba(239, 246, 255, 0.15) 30%, /* blue-50 */
-            transparent 60%
-        ),
-        /* 전체적인 밝은 오버레이 */
-        linear-gradient(135deg,
-            rgba(239, 246, 255, 0.1) 0%,   /* blue-50 */
-            rgba(224, 242, 254, 0.08) 100% /* sky-50 */
-        );
-    
-    /* 소프트한 블렌딩 */
-    mix-blend-mode: overlay;
-    z-index: 1;
-    opacity: 0.8;
+   
 }
 
 /* 콘텐츠 섹션 - 밝은 블루 톤 */
