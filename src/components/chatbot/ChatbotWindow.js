@@ -8,6 +8,10 @@ const ChatbotWindow = ({ onClose }) => {
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
+    const [pendingFriendParams, setPendingFriendParams] = useState(null); // 누락된 friend 정보 저장
+    const [awaitingField, setAwaitingField] = useState(null); // 어떤 필드를 기다리고 있는지
+    const [pendingMessageParams, setPendingMessageParams] = useState(null);
+    const [awaitingMessageOnly, setAwaitingMessageOnly] = useState(false);
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -18,8 +22,96 @@ const ChatbotWindow = ({ onClose }) => {
         setLoading(true);
 
         try {
+            // ✅ 메시지 내용만 기다리는 중이라면
+            if (awaitingMessageOnly && pendingMessageParams) {
+                const completedParams = {
+                    ...pendingMessageParams,
+                    message: input,
+                };
+
+                const finalResponse = await askToGPT(JSON.stringify({
+                    action: "send_message",
+                    params: completedParams,
+                }));
+
+                setMessages([...newMessages, { sender: "bot", text: finalResponse.response }]);
+                setPendingMessageParams(null);
+                setAwaitingMessageOnly(false);
+                setLoading(false);
+                return;
+            }
+
+            // ✅ 연락처 필드 입력 흐름
+            if (awaitingField && pendingFriendParams) {
+                const updatedParams = {
+                    ...pendingFriendParams,
+                    [awaitingField]: input,
+                };
+
+                const required = ["friendName", "friendPhone", "friendEmail", "features", "memos", "groupName", "relationType"];
+                const missing = required.filter(field => !updatedParams[field] || updatedParams[field].trim() === "");
+
+                if (missing.length > 0) {
+                    setPendingFriendParams(updatedParams);
+                    setAwaitingField(missing[0]);
+
+                    const fieldFriendlyNames = {
+                        friendName: "이름을 알려주세요 😊",
+                        friendPhone: "전화번호를 알려주세요 📱",
+                        friendEmail: "이메일 주소를 알려주세요 ✉️",
+                        features: "이 친구의 특징은 어떤가요?",
+                        memos: "기억해두고 싶은 내용을 말씀해주세요!",
+                        groupName: "이 친구는 어떤 그룹에 속하나요?",
+                        relationType: "관계 유형을 알려주세요 (예: 친구, 가족 등)",
+                    };
+
+                    setMessages([
+                        ...newMessages,
+                        { sender: "bot", text: fieldFriendlyNames[missing[0]] || `${missing[0]} 정보를 입력해주세요.` },
+                    ]);
+                } else {
+                    const finalResponse = await askToGPT(JSON.stringify({
+                        action: "add_friend",
+                        params: updatedParams,
+                    }));
+
+                    setMessages([
+                        ...newMessages,
+                        { sender: "bot", text: finalResponse.response },
+                    ]);
+                    setPendingFriendParams(null);
+                    setAwaitingField(null);
+                }
+
+                setLoading(false);
+                return;
+            }
+
+            // ✅ 일반 질문 처리
             const response = await askToGPT(input);
-            setMessages([...newMessages, { sender: "bot", text: response.response }]);
+
+            if (response.action === "missing_fields") {
+                if (response.missing.includes("message") && response.params) {
+                    // 메시지 누락 시 처리
+                    setPendingMessageParams(response.params);
+                    setAwaitingMessageOnly(true);
+                    setMessages([
+                        ...newMessages,
+                        { sender: "bot", text: "어떤 메시지를 보내고 싶으신가요? ✉️" },
+                    ]);
+                } else {
+                    // 연락처 필드 누락 시 처리
+                    setPendingFriendParams(response.params || {});
+                    setAwaitingField(response.missing[0]);
+
+                    setMessages([
+                        ...newMessages,
+                        { sender: "bot", text: response.message || `${response.missing[0]} 정보가 필요해요.` },
+                    ]);
+                }
+            } else {
+                setMessages([...newMessages, { sender: "bot", text: response.response || "처리되었습니다." }]);
+            }
         } catch (error) {
             setMessages([
                 ...newMessages,
@@ -37,7 +129,7 @@ const ChatbotWindow = ({ onClose }) => {
     return (
         <div style={styles.window}>
             <div style={styles.header}>
-                <strong style={{ fontSize: "16px" }}>🤖 PicMessage 챗봇</strong>
+                <strong style={{ fontSize: "16px" }}>ForYou 챗봇</strong>
                 <button onClick={onClose} style={styles.closeButton}>
                     <FaTimes />
                 </button>
@@ -70,29 +162,27 @@ const ChatbotWindow = ({ onClose }) => {
             </div>
         </div>
     );
-};
-
-const styles = {
+}; const styles = {
     window: {
         position: "fixed",
         bottom: "90px",
         right: "20px",
         width: "360px",
         height: "500px",
-        backgroundColor: "#ffffff",
-        borderRadius: "12px",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+        background: "linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%)",
+        borderRadius: "16px",
+        boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)",
         display: "flex",
         flexDirection: "column",
         zIndex: 1000,
-        fontFamily: "'Segoe UI', sans-serif",
+        fontFamily: "'Apple SD Gothic Neo', 'Pretendard', sans-serif",
     },
     header: {
-        backgroundColor: "#4A90E2",
+        background: "linear-gradient(to right, #4A90E2, #007BFF)",
         color: "white",
         padding: "14px",
-        borderTopLeftRadius: "12px",
-        borderTopRightRadius: "12px",
+        borderTopLeftRadius: "16px",
+        borderTopRightRadius: "16px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
@@ -108,30 +198,31 @@ const styles = {
         flex: 1,
         padding: "16px",
         overflowY: "auto",
-        backgroundColor: "#fdfdfd",
+        backgroundColor: "#f9fafb",
         display: "flex",
         flexDirection: "column",
-        gap: "8px",
+        gap: "10px",
     },
     footer: {
         display: "flex",
         padding: "12px",
-        borderTop: "1px solid #e0e0e0",
-        backgroundColor: "#fafafa",
+        borderTop: "1px solid #e5e7eb",
+        backgroundColor: "#ffffff",
     },
     input: {
         flex: 1,
         padding: "10px 14px",
         borderRadius: "24px",
-        border: "1px solid #ccc",
+        border: "1px solid #d1d5db",
         fontSize: "14px",
         outline: "none",
+        backgroundColor: "#f3f4f6",
     },
     sendButton: {
-        backgroundColor: "#4A90E2",
+        background: "linear-gradient(to right, #4A90E2, #007BFF)",
         color: "white",
         border: "none",
-        padding: "10px 14px",
+        padding: "10px",
         marginLeft: "8px",
         borderRadius: "50%",
         cursor: "pointer",
@@ -139,23 +230,29 @@ const styles = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
     },
     message: {
         padding: "10px 14px",
-        borderRadius: "16px",
+        borderRadius: "18px",
         fontSize: "14px",
         maxWidth: "75%",
         wordWrap: "break-word",
+        lineHeight: "1.5",
     },
     userMessage: {
         alignSelf: "flex-end",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "white",
+        color: "#4B2991",
         borderTopRightRadius: "0px",
+        border: "1px solid #e5e7eb",
     },
     botMessage: {
         alignSelf: "flex-start",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#ffffff",
+        border: "1px solid #e5e7eb",
         borderTopLeftRadius: "0px",
+        color: "#374151",
     },
 };
 
