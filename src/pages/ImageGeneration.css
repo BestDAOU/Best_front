@@ -1,0 +1,27 @@
+.image-gallery-left-nav,
+.image-gallery-right-nav {
+  width: 40px !important; /* 줄이기 */
+  height: 40px !important;
+  padding: 0 !important; /* 혹시 있을지 모를 패딩 제거 */
+  top: 50% !important;
+  z-index: 10;
+}
+
+.image-gallery-left-nav {
+  left: 5px !important;
+}
+
+.image-gallery-right-nav {
+  right: 15px !important;
+}
+
+.image-gallery-svg {
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 50%;
+}
+
+/* 👉 Hover 시 배경만 회색으로 감싸기 */
+.image-gallery-svg:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+}

@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import LoadingAnimation from "../components/LoadingAnimation";
 import ImageGallery from "react-image-gallery";
 import "react-image-gallery/styles/css/image-gallery.css";
-
+import "./ImageGeneration.css";
 const ImageGeneration = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -491,7 +491,7 @@ const styles = {
     alignItems: "center",
     borderRadius: "4px",
     overflow: "hidden",
-    background: "#f9f9f9",
+    background: "#aaa",
     marginBottom: "20px",
     minHeight: "400px", // 이미지 디스플레이 최소 높이 설정
   },
