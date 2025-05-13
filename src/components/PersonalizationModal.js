@@ -663,27 +663,14 @@ const styles = {
   },
   // 스크롤바 컨테이너 추가
   examplesContainer: {
-    maxHeight: "290px", // 최대 높이 제한
-    overflowY: "auto", // 세로 스크롤바 추가
-    marginRight: "-5px", // 오른쪽 패딩을 줄여서 스크롤바 공간 확보
-    paddingRight: "5px", // 스크롤바와 내용 사이 간격
-    // 스크롤바 스타일 커스터마이징 (webkit 기반 브라우저)
-    scrollbarWidth: "thin", // Firefox
-    "&::-webkit-scrollbar": {
-      width: "8px",
-    },
-    "&::-webkit-scrollbar-track": {
-      background: "#f1f1f1",
-      borderRadius: "4px",
-    },
-    "&::-webkit-scrollbar-thumb": {
-      background: "#c1c1c1",
-      borderRadius: "4px",
-    },
-    "&::-webkit-scrollbar-thumb:hover": {
-      background: "#a8a8a8",
-    },
+    maxHeight: "290px",
+    overflowY: "auto",
+    marginRight: "-5px",
+    paddingRight: "5px",
+    scrollbarWidth: "thin", // Firefox용은 남겨둘 수 있음
+    // 아래 &::-webkit-scrollbar 관련 스타일은 제거
   },
+
   examplesDescription: {
     fontSize: "14px",
     fontWeight: "bold",
