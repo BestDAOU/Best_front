@@ -302,16 +302,16 @@ const ContactList = ({
           <div style={styles.contactListContainer}>
             <div style={styles.contactHeaderRow}>
               <div style={styles.checkboxPlaceholder}></div>
-              <span style={styles.nameColumn}>
+              <span style={styles.headerNameColumn}>
                 <FaUser /> 이름
               </span>
-              <span style={styles.relationColumn}>
+              <span style={styles.headerRelationColumn}>
                 <FaUserFriends /> 관계
               </span>
-              <span style={styles.emailColumn}>
+              <span style={styles.headerEmailColumn}>
                 <FaEnvelope /> 이메일
               </span>
-              <span style={styles.phoneColumn}>
+              <span style={styles.headerPhoneColumn}>
                 <FaPhone /> 전화번호
               </span>
               <div style={styles.actionButtonsPlaceholder}></div>
@@ -667,25 +667,63 @@ const styles = {
     overflowY: "auto",
     overflowX: "hidden",
     height: "calc(100% - 50px)", // 헤더 높이(대략 50px)를 뺀 나머지 공간
-    paddingLeft: "5px",
+    paddingLeft: "0px",
     paddingRight: "5px",
     display: "block", // 명시적으로 block으로 설정
   },
 
-  // 헤더 컬럼 (새로 추가)
-  headerColumn: {
+  headerNameColumn: {
     display: "flex",
     alignItems: "center",
     gap: "5px",
-    width: "20%", // 기본 컬럼 너비 유지
+    width: "150px",
     paddingLeft: "10px",
     boxSizing: "border-box",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+
+  headerRelationColumn: {
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+    width: "130px",
+    paddingLeft: "10px",
+    boxSizing: "border-box",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+
+  headerEmailColumn: {
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+    width: "240px",
+    paddingLeft: "10px",
+    boxSizing: "border-box",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+
+  headerPhoneColumn: {
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+    width: "165px",
+    paddingLeft: "10px",
+    boxSizing: "border-box",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   nameColumn: {
     display: "flex",
     alignItems: "center",
     gap: "5px",
-    width: "18%", // 이름 컬럼 너비
+    width: "150px", // 이름 컬럼 너비
     paddingLeft: "10px",
     boxSizing: "border-box",
     overflow: "hidden",
@@ -696,7 +734,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "5px",
-    width: "15%", // 관계 컬럼 너비 줄임
+    width: "130px", // 관계 컬럼 너비 줄임
     paddingLeft: "10px",
     boxSizing: "border-box",
     overflow: "hidden",
@@ -708,7 +746,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "5px",
-    width: "28%", // 이메일 컬럼 너비 늘림
+    width: "240px", // 이메일 컬럼 너비 늘림
     paddingLeft: "10px",
     boxSizing: "border-box",
     overflow: "hidden",
@@ -720,7 +758,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "5px",
-    width: "19%", // 전화번호 컬럼 너비
+    width: "165px",
     paddingLeft: "10px",
     boxSizing: "border-box",
     overflow: "hidden",
@@ -856,6 +894,7 @@ const styles = {
     border: "1px solid #007bff",
     borderRadius: "8px",
     marginTop: "10px",
+    maxWidth: "860px",
   },
 
   detailsHeader: {
