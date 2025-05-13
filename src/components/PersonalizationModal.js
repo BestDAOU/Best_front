@@ -606,8 +606,9 @@ const styles = {
 
   // hover 상태일 때의 스타일 추가
   navButtonHover: {
-    color: "#3a78c2", // 호버 시 색상 변경
-    transform: "scale(1.2)", // 호버 시 약간 확대
+    backgroundColor: "#f0f0f0", // 호버 시 회색 음영 배경
+    // 기존 transform 제거
+    // 기존 color 변경도 필요 시 유지 가능
   },
 
   buttonGroup: {
@@ -649,9 +650,6 @@ const styles = {
   },
   resetButtonHover: {
     backgroundColor: "#f0f0f0", // hover 시 밝은 회색 배경
-    borderColor: "#b0b0b0", // hover 시 테두리 색상 변경
-    transform: "scale(1.02)", // 약간 커짐
-    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", // 눌리는 느낌의 그림자
   },
   examples: {
     marginTop: "20px", // 어조 선택 버튼과 예시 간의 간격
@@ -717,8 +715,6 @@ const styles = {
   },
   convertButtonHover: {
     backgroundColor: "#3a78c2",
-    transform: "scale(1.05)",
-    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
   },
 
   inlineToneExtractButtonHover: {
