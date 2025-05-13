@@ -243,22 +243,23 @@ const PersonalizationModal = ({
                   </button>
                 </div>
 
-                {/* 선택된 어조의 예시 표시 */}
-                {/* 예시 설명 및 렌더링 */}
+                {/* 선택된 어조의 예시 표시 - 스크롤바 추가 */}
                 <div style={styles.examples}>
                   {selectedToneExamples.length > 0 ? (
                     <>
                       <p style={styles.examplesDescription}>
                         해당 말투는 이런 예시들을 참고합니다:
                       </p>
-                      {selectedToneExamples.map((example, index) => (
-                        <div key={index} style={styles.exampleCard}>
-                          <p style={styles.exampleText}>
-                            <strong>예시 {index + 1}: </strong>
-                            {example}
-                          </p>
-                        </div>
-                      ))}
+                      <div style={styles.examplesContainer}>
+                        {selectedToneExamples.map((example, index) => (
+                          <div key={index} style={styles.exampleCard}>
+                            <p style={styles.exampleText}>
+                              <strong>예시 {index + 1}: </strong>
+                              {example}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     </>
                   ) : (
                     <p style={styles.noExampleText}>예시가 없습니다.</p>
@@ -317,6 +318,7 @@ const PersonalizationModal = ({
                 ...styles.resetButton,
                 ...(hoveringTarget === "reset" && styles.resetButtonHover),
               }}
+              title="원본 메시지로 초기화" // 툴팁으로 설명 추가
             >
               ↺
             </button>
@@ -547,7 +549,6 @@ const styles = {
     alignItems: "center",
     gap: "10px",
     marginTop: "10px",
-    border: "1px dashed black", // 점선 테두리
   },
   convertLabel: {
     fontSize: "16px",
@@ -638,8 +639,9 @@ const styles = {
   resetButton: {
     backgroundColor: "white",
     color: "black",
-    fontSize: "21px",
-    padding: "7px 10px",
+    fontSize: "22px",
+    fontWeight: "500", // 중간 정도 두께로 설정 (normal과 bold 사이)
+    padding: "7px 11px", // 패딩 약간 증가
     cursor: "pointer",
     marginLeft: "auto",
     transition: "all 0.3s ease",
@@ -658,6 +660,29 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid #e0e0e0",
     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+  },
+  // 스크롤바 컨테이너 추가
+  examplesContainer: {
+    maxHeight: "290px", // 최대 높이 제한
+    overflowY: "auto", // 세로 스크롤바 추가
+    marginRight: "-5px", // 오른쪽 패딩을 줄여서 스크롤바 공간 확보
+    paddingRight: "5px", // 스크롤바와 내용 사이 간격
+    // 스크롤바 스타일 커스터마이징 (webkit 기반 브라우저)
+    scrollbarWidth: "thin", // Firefox
+    "&::-webkit-scrollbar": {
+      width: "8px",
+    },
+    "&::-webkit-scrollbar-track": {
+      background: "#f1f1f1",
+      borderRadius: "4px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      background: "#c1c1c1",
+      borderRadius: "4px",
+    },
+    "&::-webkit-scrollbar-thumb:hover": {
+      background: "#a8a8a8",
+    },
   },
   examplesDescription: {
     fontSize: "14px",
@@ -713,6 +738,9 @@ const styles = {
     backgroundColor: "#3a78c2",
     transform: "scale(1.05)",
     boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+  },
+  inlineTitle: {
+    margin: 0,
   },
 };
 
