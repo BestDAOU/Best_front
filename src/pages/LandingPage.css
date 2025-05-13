@@ -737,7 +737,12 @@ html {
     
 
 
-    background: none !important;
+    /* background: none !important; */
+    /* background: #DFE9FD !important; */
+    background: #E3EEFF !important;
+
+
+    
 
 }
 
@@ -775,14 +780,9 @@ html {
     left: 0;
     /* 작은 스케일로 영상이 잘리지 않게 */
     transform: scale(0.9);
+    filter: none !important;
     
-    /* 밝은 톤에 맞는 필터 */
-    filter: 
-        brightness(0.95) 
-        contrast(1.05) 
-        saturate(1.0) 
-        hue-rotate(5deg) 
-        blur(0.3px);
+  
 }
 
 /* 밝은 블루 오버레이 */
@@ -792,6 +792,8 @@ html {
     left: 0;
     width: 100%;
     height: 100%;
+    background: none !important;
+
    
 }
 
