@@ -735,12 +735,10 @@ html {
     align-items: center;
     justify-content: center;
     
-/* 겉색상(밝은 블루)으로 통일된 배경 그라데이션 */
-background: linear-gradient(135deg, 
-    #DEEBFE 0%,    /* 새로운 메인 색상 */
-    #DEEBFE 20%,   /* 동일 색상 유지 */
-    #DEEBFE 40%,   /* 동일 색상 유지 */
-    #DEEBFE 100%); /* 동일 색상 유지 */
+
+
+    background: none !important;
+
 }
 
 .video-background-container {
