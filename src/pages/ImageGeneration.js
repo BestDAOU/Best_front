@@ -491,7 +491,8 @@ const styles = {
     alignItems: "center",
     borderRadius: "4px",
     overflow: "hidden",
-    background: "#aaa",
+    // background: "#aaa",밝은 하늘색 (#e6f4ff)연한 그레이 블루 (#f0f4f8) 따뜻한 크림색 (#fffaf0)
+    background: "#f0f4f8",
     marginBottom: "20px",
     minHeight: "400px", // 이미지 디스플레이 최소 높이 설정
   },
