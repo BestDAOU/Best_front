@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import MessageAnimation from "../components/MessageAnimation";
 import UploadToneModal from "../components/UploadToneModal"; // 상단 import
 import { convertText } from "../services/PersonalizationService"; // Import the OpenAI service
+import firstIcon from "../assets/images/firstIcon.png";
+import prevIcon from "../assets/images/prevIcon.png";
+import nextIcon from "../assets/images/nextIcon.png";
+import lastIcon from "../assets/images/lastIcon.png";
 
 const PersonalizationModal = ({
   selectedContacts,
@@ -239,22 +243,23 @@ const PersonalizationModal = ({
                   </button>
                 </div>
 
-                {/* 선택된 어조의 예시 표시 */}
-                {/* 예시 설명 및 렌더링 */}
+                {/* 선택된 어조의 예시 표시 - 스크롤바 추가 */}
                 <div style={styles.examples}>
                   {selectedToneExamples.length > 0 ? (
                     <>
                       <p style={styles.examplesDescription}>
                         해당 말투는 이런 예시들을 참고합니다:
                       </p>
-                      {selectedToneExamples.map((example, index) => (
-                        <div key={index} style={styles.exampleCard}>
-                          <p style={styles.exampleText}>
-                            <strong>예시 {index + 1}: </strong>
-                            {example}
-                          </p>
-                        </div>
-                      ))}
+                      <div style={styles.examplesContainer}>
+                        {selectedToneExamples.map((example, index) => (
+                          <div key={index} style={styles.exampleCard}>
+                            <p style={styles.exampleText}>
+                              <strong>예시 {index + 1}: </strong>
+                              {example}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     </>
                   ) : (
                     <p style={styles.noExampleText}>예시가 없습니다.</p>
@@ -313,8 +318,9 @@ const PersonalizationModal = ({
                 ...styles.resetButton,
                 ...(hoveringTarget === "reset" && styles.resetButtonHover),
               }}
+              title="원본 메시지로 초기화" // 툴팁으로 설명 추가
             >
-              ↺ 되돌리기
+              ↺
             </button>
           </div>
 
@@ -329,7 +335,6 @@ const PersonalizationModal = ({
               onClick={() => setCurrentIndex(0)}
               style={{
                 ...styles.navButton,
-                ...styles.mediaButton,
                 ...(currentIndex === 0 ? styles.navButtonDisabled : {}),
                 ...(hoveringTarget === "first" && currentIndex !== 0
                   ? styles.navButtonHover
@@ -339,13 +344,22 @@ const PersonalizationModal = ({
               onMouseEnter={() => setHoveringTarget("first")}
               onMouseLeave={() => setHoveringTarget(null)}
             >
-              ⏮
+              <img
+                src={firstIcon}
+                alt="처음으로 이동"
+                style={{
+                  width: "15px",
+                  height: "auto",
+                  objectFit: "contain",
+                  marginTop: "2px",
+                  opacity: currentIndex === 0 ? 0.4 : 1,
+                }}
+              />
             </button>
             <button
               onClick={handlePrev}
               style={{
                 ...styles.navButton,
-                ...styles.arrowButton,
                 ...(currentIndex === 0 ? styles.navButtonDisabled : {}),
                 ...(hoveringTarget === "prev" && currentIndex !== 0
                   ? styles.navButtonHover
@@ -355,7 +369,17 @@ const PersonalizationModal = ({
               onMouseEnter={() => setHoveringTarget("prev")}
               onMouseLeave={() => setHoveringTarget(null)}
             >
-              &lt;
+              <img
+                src={prevIcon}
+                alt="이전으로 이동"
+                style={{
+                  width: "11px",
+                  height: "auto",
+                  objectFit: "contain",
+                  marginTop: "2px",
+                  opacity: currentIndex === 0 ? 0.4 : 1,
+                }}
+              />
             </button>
             <span style={styles.pageInfo}>
               {currentIndex + 1} / {selectedContacts.length}
@@ -377,7 +401,18 @@ const PersonalizationModal = ({
               onMouseEnter={() => setHoveringTarget("next")}
               onMouseLeave={() => setHoveringTarget(null)}
             >
-              &gt;
+              <img
+                src={nextIcon}
+                alt="다음으로 이동"
+                style={{
+                  width: "11px",
+                  height: "auto", // 👉 원본 비율 유지
+                  objectFit: "contain", // 👉 필요 시 비율 보존
+                  marginTop: "2px",
+                  opacity:
+                    currentIndex === selectedContacts.length - 1 ? 0.4 : 1,
+                }}
+              />
             </button>
             <button
               onClick={() => setCurrentIndex(selectedContacts.length - 1)}
@@ -396,7 +431,18 @@ const PersonalizationModal = ({
               onMouseEnter={() => setHoveringTarget("last")}
               onMouseLeave={() => setHoveringTarget(null)}
             >
-              ⏭
+              <img
+                src={lastIcon}
+                alt="끝으로 이동"
+                style={{
+                  width: "15px",
+                  height: "auto", // 👉 원본 비율 유지
+                  objectFit: "contain", // 👉 필요 시 비율 보존
+                  marginTop: "5px",
+                  opacity:
+                    currentIndex === selectedContacts.length - 1 ? 0.4 : 1,
+                }}
+              />
             </button>
           </div>
 
@@ -434,7 +480,7 @@ const styles = {
     padding: "30px",
     borderRadius: "12px",
     width: "1200px", // 너비 증가
-    height: "900px", // 높이 증가
+    height: "98%", // 높이 증가
     boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
     zIndex: 1001,
     display: "flex", // 좌우 레이아웃
@@ -524,7 +570,7 @@ const styles = {
     display: "flex",
     justifyContent: "center", // 중앙 정렬
     alignItems: "center", // 수직 중앙 정렬
-    gap: "60px", // 버튼 사이 간격 늘림
+    gap: "40px", // 버튼 사이 간격 늘림
     marginTop: "15px",
   },
 
@@ -535,7 +581,6 @@ const styles = {
     padding: "5px",
     cursor: "pointer",
     transition: "all 0.2s",
-    fontSize: "50px",
     fontWeight: "bold",
     minWidth: "30px",
     height: "30px", // 높이 고정
@@ -546,23 +591,9 @@ const styles = {
     lineHeight: 1, // 라인 높이를 1로 통일
   },
 
-  // < > 기호를 위한 스타일
-  arrowButton: {
-    fontSize: "30px", // 화살표 크기 키움
-    position: "relative",
-    top: "2px", // 위치 미세 조정
-  },
-
-  // ⏮ ⏭ 기호를 위한 스타일
-  mediaButton: {
-    fontSize: "30px", // 미디어 컨트롤 기호 크기
-    position: "relative",
-    top: "-1px", // 필요시 조정
-  },
-
   pageInfo: {
     fontSize: "16px",
-    fontWeight: "bold",
+    fontWeight: "",
     color: "#333", // 색상 변경
     margin: "0 10px", // 좌우 여백 추가
   },
@@ -575,8 +606,9 @@ const styles = {
 
   // hover 상태일 때의 스타일 추가
   navButtonHover: {
-    color: "#3a78c2", // 호버 시 색상 변경
-    transform: "scale(1.2)", // 호버 시 약간 확대
+    backgroundColor: "#f0f0f0", // 호버 시 회색 음영 배경
+    // 기존 transform 제거
+    // 기존 color 변경도 필요 시 유지 가능
   },
 
   buttonGroup: {
@@ -606,23 +638,18 @@ const styles = {
     transition: "background-color 0.3s",
   },
   resetButton: {
-    backgroundColor: "white", // 흰색 배경
-    color: "black", // 검은 텍스트
-    fontSize: "15px",
-    borderWidth: "3px", // 테두리 두께
-    borderStyle: "solid", // 테두리 스타일
-    borderColor: "#d3d3d3", // 테두리 색상
-    padding: "7px 10px",
-    borderRadius: "6px",
+    backgroundColor: "white",
+    color: "black",
+    fontSize: "22px",
+    fontWeight: "500", // 중간 정도 두께로 설정 (normal과 bold 사이)
+    padding: "7px 11px", // 패딩 약간 증가
     cursor: "pointer",
-    marginLeft: "auto", // 오른쪽 정렬
-    transition: "all 0.3s ease", // 부드러운 hover 효과
+    marginLeft: "auto",
+    transition: "all 0.3s ease",
+    border: "none", // ✅ 테두리 없애기
   },
   resetButtonHover: {
     backgroundColor: "#f0f0f0", // hover 시 밝은 회색 배경
-    borderColor: "#b0b0b0", // hover 시 테두리 색상 변경
-    transform: "scale(1.02)", // 약간 커짐
-    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", // 눌리는 느낌의 그림자
   },
   examples: {
     marginTop: "20px", // 어조 선택 버튼과 예시 간의 간격
@@ -632,6 +659,16 @@ const styles = {
     border: "1px solid #e0e0e0",
     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
   },
+  // 스크롤바 컨테이너 추가
+  examplesContainer: {
+    maxHeight: "290px",
+    overflowY: "auto",
+    marginRight: "-5px",
+    paddingRight: "5px",
+    scrollbarWidth: "thin", // Firefox용은 남겨둘 수 있음
+    // 아래 &::-webkit-scrollbar 관련 스타일은 제거
+  },
+
   examplesDescription: {
     fontSize: "14px",
     fontWeight: "bold",
@@ -678,14 +715,15 @@ const styles = {
   },
   convertButtonHover: {
     backgroundColor: "#3a78c2",
-    transform: "scale(1.05)",
-    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
   },
 
   inlineToneExtractButtonHover: {
     backgroundColor: "#3a78c2",
     transform: "scale(1.05)",
     boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+  },
+  inlineTitle: {
+    margin: 0,
   },
 };
 
