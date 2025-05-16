@@ -118,6 +118,7 @@ const PersonalizationModal = ({
       const originalMessage = await convertText({
         originalText: textToConvert,
         toneId: selectedToneData.id,
+        friendId: currentContact.id, // 친구 ID 추가
       });
 
       const cleanedMessage = removeEmojis(originalMessage);
