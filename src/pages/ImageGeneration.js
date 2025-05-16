@@ -277,8 +277,6 @@ const CategorySelector = ({
         // 옵션 버튼 호버 스타일
         const optionHoverStyle = isHovered
           ? {
-              transform: "translateY(-2px)",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
               backgroundColor: isSelected ? "#3980d3" : "#d0d6e6",
             }
           : {};
@@ -479,8 +477,6 @@ const styles = {
     marginBottom: "10px",
   },
   buttonHover: {
-    transform: "translateY(-3px)",
-    boxShadow: "0 6px 12px rgba(0, 0, 0, 0.2)",
     backgroundColor: "#3980d3",
   },
   imageDisplay: {
