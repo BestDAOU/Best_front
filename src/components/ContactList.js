@@ -672,12 +672,14 @@ const styles = {
     display: "block", // 명시적으로 block으로 설정
   },
 
+  // 헤더 컬럼들 중앙 정렬
   headerNameColumn: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center", // 중앙 정렬 추가
     gap: "5px",
     width: "150px",
-    paddingLeft: "10px",
+    paddingLeft: "0", // 왼쪽 패딩 제거
     boxSizing: "border-box",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -687,9 +689,10 @@ const styles = {
   headerRelationColumn: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center", // 중앙 정렬 추가
     gap: "5px",
     width: "130px",
-    paddingLeft: "10px",
+    paddingLeft: "0", // 왼쪽 패딩 제거
     boxSizing: "border-box",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -699,9 +702,10 @@ const styles = {
   headerEmailColumn: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center", // 중앙 정렬 추가
     gap: "5px",
     width: "240px",
-    paddingLeft: "10px",
+    paddingLeft: "0", // 왼쪽 패딩 제거
     boxSizing: "border-box",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -711,31 +715,37 @@ const styles = {
   headerPhoneColumn: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center", // 중앙 정렬 추가
     gap: "5px",
     width: "165px",
-    paddingLeft: "10px",
+    paddingLeft: "0", // 왼쪽 패딩 제거
     boxSizing: "border-box",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
+
+  // 데이터 컬럼들 중앙 정렬
   nameColumn: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center", // 중앙 정렬 추가
     gap: "5px",
-    width: "150px", // 이름 컬럼 너비
-    paddingLeft: "10px",
+    width: "150px",
+    paddingLeft: "0", // 왼쪽 패딩 제거
     boxSizing: "border-box",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
+
   relationColumn: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center", // 중앙 정렬 추가
     gap: "5px",
-    width: "130px", // 관계 컬럼 너비 줄임
-    paddingLeft: "10px",
+    width: "130px",
+    paddingLeft: "0", // 왼쪽 패딩 제거
     boxSizing: "border-box",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -745,9 +755,10 @@ const styles = {
   emailColumn: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center", // 중앙 정렬 추가
     gap: "5px",
-    width: "240px", // 이메일 컬럼 너비 늘림
-    paddingLeft: "10px",
+    width: "240px",
+    paddingLeft: "0", // 왼쪽 패딩 제거
     boxSizing: "border-box",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -757,9 +768,10 @@ const styles = {
   phoneColumn: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center", // 중앙 정렬 추가
     gap: "5px",
     width: "165px",
-    paddingLeft: "10px",
+    paddingLeft: "0", // 왼쪽 패딩 제거
     boxSizing: "border-box",
     overflow: "hidden",
     textOverflow: "ellipsis",
