@@ -13,7 +13,7 @@ import {
 import PersonalizationModal from "./PersonalizationModal";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { getFriendsByMemberId } from "../services/FriendsService"; // ✅ DB API 호출
+import { getFriendsByMemberId, deleteFriend } from "../services/FriendsService"; // ✅ DB API 호출
 
 const ContactList = ({
   message,
@@ -52,7 +52,7 @@ const ContactList = ({
           tag: item.features, // features → tag
           tone: item.selectedToneId
             ? item.tonesInfo.find((t) => t.id === item.selectedToneId)?.name ||
-              ""
+            ""
             : "",
           memo: item.memos,
           group: item.groupName || "기본", // group 필드 없을 경우 대비
@@ -153,12 +153,20 @@ const ContactList = ({
     setIsAllChecked(!isAllChecked);
   };
 
-  const handleDelete = (id) => {
-    const remainingContacts = contacts.filter((contact) => contact.id !== id);
-    setContacts(remainingContacts);
-    setSelectedContacts((prevSelected) =>
-      prevSelected.filter((selected) => selected.id !== id)
-    );
+  const handleDelete = async (id) => {
+    if (!window.confirm("정말 이 연락처를 삭제하시겠습니까?")) return;
+    try {
+      // 1) DB에서 삭제
+      await deleteFriend(id);
+      // 2) state에서도 삭제
+      setContacts((prev) => prev.filter((c) => c.id !== id));
+      setSelectedContacts((prev) =>
+        prev.filter((c) => c.id !== id)
+      );
+    } catch (err) {
+      console.error("삭제 실패:", err);
+      alert("삭제에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   const toggleDetails = (id) => {
@@ -256,9 +264,9 @@ const ContactList = ({
                 style={
                   isPersonalizeHovered
                     ? {
-                        ...styles.personalizeButton,
-                        ...styles.personalizeButtonHover,
-                      }
+                      ...styles.personalizeButton,
+                      ...styles.personalizeButtonHover,
+                    }
                     : styles.personalizeButton
                 }
                 onClick={openModal}
@@ -272,9 +280,9 @@ const ContactList = ({
                 style={
                   isAddContactHovered
                     ? {
-                        ...styles.personalizeButton,
-                        ...styles.personalizeButtonHover,
-                      }
+                      ...styles.personalizeButton,
+                      ...styles.personalizeButtonHover,
+                    }
                     : styles.personalizeButton
                 }
                 onClick={() => navigate(`/contact-form/${memberId}`)}
@@ -295,7 +303,7 @@ const ContactList = ({
               onComplete={() => setIsModalOpen(false)}
               setContacts={setContacts}
               message={message}
-              //
+            //
             />
           )}
 

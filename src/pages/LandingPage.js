@@ -38,9 +38,9 @@ const LandingPage = () => {
           </video>
           <div className="video-overlay-modern" />
         </div>
-        <div className="scroll-indicator">
+        {/* <div className="scroll-indicator">
           <div className="scroll-arrow" />
-        </div>
+        </div> */}
       </div>
 
       {/* 히어로 콘텐츠 */}
@@ -60,9 +60,8 @@ const LandingPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center px-4">
               <button
-                className={`px-6 md:px-10 py-3 md:py-4 text-base md:text-lg font-semibold rounded-lg transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700 shadow-lg ${
-                  isHovered ? 'transform scale-105' : ''
-                }`}
+                className={`px-6 md:px-10 py-3 md:py-4 text-base md:text-lg font-semibold rounded-lg transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700 shadow-lg ${isHovered ? 'transform scale-105' : ''
+                  }`}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 onClick={() => navigate('/main')}
@@ -148,22 +147,22 @@ const LandingPage = () => {
               </div>
             </div>
           </div> */}
-   {/* 썸네일 + 재생 아이콘 */}
-  <div className="max-w-3xl mx-auto rounded-xl overflow-hidden shadow-xl relative cursor-pointer">
-     {/* 16:9 비율 박스 */}
-    <div className="aspect-w-16 aspect-h-9 w-full h-full">
-      <img
-        src={thumbnail}
-        alt="튜토리얼 썸네일"
-       className="absolute inset-0 w-full h-full object-cover"
-      />
-     {/* 재생 아이콘 오버레이 */}
-      {/* <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/30 backdrop-blur-sm transition-opacity duration-300 hover:bg-black/40">
+          {/* 썸네일 + 재생 아이콘 */}
+          <div className="max-w-3xl mx-auto rounded-xl overflow-hidden shadow-xl relative cursor-pointer">
+            {/* 16:9 비율 박스 */}
+            <div className="aspect-w-16 aspect-h-9 w-full h-full">
+              <img
+                src={thumbnail}
+                alt="튜토리얼 썸네일"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              {/* 재생 아이콘 오버레이 */}
+              {/* <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/30 backdrop-blur-sm transition-opacity duration-300 hover:bg-black/40">
         <div className="text-4xl md:text-6xl mb-2">▶️</div>
       <p className="text-lg md:text-xl font-semibold drop-shadow">{tutorial.cta}</p>
      </div> */}
-    </div>
-   </div>
+            </div>
+          </div>
 
 
 

@@ -16,10 +16,9 @@ const ContactForm = () => {
     email: "", // 이메일 추가
     memo: "", // 메모 추가
     tag: "",
-    tone: tones[0].label, // 기본값 설정,
     group: "찐친", // 기본값 설정
-    profile: "https://via.placeholder.com/40", // 기본 이미지
     relationType: "",
+    selectedToneId: 13,
   });
 
   const [phoneError, setPhoneError] = useState("");
@@ -85,9 +84,9 @@ const ContactForm = () => {
       email: "",
       memo: "",
       tag: "",
-      tone: tones[0].label,
       group: "찐친",
-      profile: "https://via.placeholder.com/40",
+      selectedToneId: 13,
+
     });
   };
   // 연락처 삭제 함수 추가
@@ -126,7 +125,8 @@ const ContactForm = () => {
           tones_prompt: "{\"label\":\"친근한 말투\",\"instruction\":\"상대방과 친밀한 관계를 나타내는 말투로 말하세요.\",\"examples\":[\"안녕, 잘 지냈어?\"]}",
           groupName: contact.group || "기본",
           relationType: contact.relationType || "",
-          member_id: parseInt(memberId) // 이 필드가 반드시 포함되어야 함
+          member_id: parseInt(memberId), // 이 필드가 반드시 포함되어야 함
+          selectedToneId: 13,
         };
 
         console.log("서버에 전송하는 데이터:", JSON.stringify(payload, null, 2));
