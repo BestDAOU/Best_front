@@ -1,10 +1,7 @@
 // src/services/KeywordService.js
 import axios from "axios";
-
+import { REST_API_BASE_URL } from "../config/apiConfig";
 // 서버 API 기본 URL 설정
-const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "http://localhost:8080/api";
-
 /**
  * 메시지에서 키워드를 추출하는 서버 API 호출
  * @param {string} message - 키워드를 추출할 메시지
@@ -12,7 +9,7 @@ const API_BASE_URL =
  */
 export const extractKeywordsFromServer = async (message) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/keywords/extract`, {
+    const response = await axios.post(`${REST_API_BASE_URL}/keywords/extract`, {
       messageContent: message,
     });
 
@@ -36,7 +33,7 @@ export const extractKeywordsFromServer = async (message) => {
  */
 export const generateImageFromServer = async (keyword) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/images/generate`, {
+    const response = await axios.post(`${REST_API_BASE_URL}/images/generate`, {
       keyword,
     });
 

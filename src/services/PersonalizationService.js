@@ -1,12 +1,9 @@
 import axios from "axios";
-
-// 백엔드 API 기본 URL
-const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "http://localhost:8080/api";
+import { REST_API_BASE_URL } from "../config/apiConfig";
 
 export const convertText = async ({ originalText, toneId, friendId }) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/tone-transform`, {
+    const response = await axios.post(`${REST_API_BASE_URL}/tone-transform`, {
       originalText,
       toneId,
       friendId, // 친구 ID를 요청 본문에 추가

@@ -1,8 +1,5 @@
 import axios from "axios";
-
-// 백엔드 API 기본 URL (환경 변수에서 가져오거나 하드코딩)
-const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "http://localhost:8080/api";
+import { MESSAGES_API_BASE_URL } from "../config/apiConfig";
 
 /**
  * 메시지 생성 관련 API 서비스
@@ -17,7 +14,7 @@ class MessageGenerationService {
    */
   static async generateMessage(inputText, selectedKeywords) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/messages/generate`, {
+      const response = await axios.post(`${MESSAGES_API_BASE_URL}/generate`, {
         inputText,
         keywords: selectedKeywords,
       });

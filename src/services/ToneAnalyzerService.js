@@ -1,7 +1,6 @@
 // services/ToneAnalyzerService.js
 import axios from "axios";
-
-const TONE_ANALYZER_API_URL = "http://localhost:8080/api/tone-analyzer/analyze";
+import { ToneAnalyzer_API_BASE_URL } from "../config/apiConfig";
 
 /**
  * 말투 분석 요청
@@ -15,7 +14,7 @@ export const analyzeTone = async (file, targetName, friendId) => {
   formData.append("userName", targetName); // 백엔드에 맞춰 userName으로 보냄
   formData.append("friendId", friendId); // friendId 추가
 
-  const response = await axios.post(TONE_ANALYZER_API_URL, formData, {
+  const response = await axios.post(ToneAnalyzer_API_BASE_URL, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
