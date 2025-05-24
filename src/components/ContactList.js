@@ -13,7 +13,7 @@ import {
 import PersonalizationModal from "./PersonalizationModal";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { getFriendsByMemberId } from "../services/FriendsService"; // ✅ DB API 호출
+import { getFriendsByMemberId, deleteFriend } from "../services/FriendsService"; // ✅ DB API 호출
 
 const ContactList = ({
   message,
@@ -43,22 +43,31 @@ const ContactList = ({
       try {
         const response = await getFriendsByMemberId(memberId);
         console.log("📦 불러온 contacts:", response.data);
-        const mappedContacts = response.data.map((item) => ({
-          id: item.id,
-          name: item.friendName,
-          relationType: item.relationType,
-          phone: item.friendPhone,
-          email: item.friendEmail,
-          tag: item.features, // features → tag
-          tone: item.selectedToneId
-            ? item.tonesInfo.find((t) => t.id === item.selectedToneId)?.name ||
-              ""
-            : "",
-          memo: item.memos,
-          group: item.groupName || "기본", // group 필드 없을 경우 대비
-          tonesInfo: item.tonesInfo || [], // tonesInfo 추가
-          selectedToneId: item.selectedToneId || null, // selectedToneId 추가
-        }));
+
+        // 기본 톤 ID 설정
+        const defaultToneId = 13;
+
+        const mappedContacts = response.data.map((item) => {
+          // selectedToneId가 없으면 defaultToneId 사용
+          const toneId = item.selectedToneId ?? defaultToneId;
+          // tonesInfo에서 해당 tone 객체 찾기
+          const toneObj = item.tonesInfo?.find((t) => t.id === toneId);
+
+          return {
+            id: item.id,
+            name: item.friendName,
+            relationType: item.relationType,
+            phone: item.friendPhone,
+            email: item.friendEmail,
+            tag: item.features,                   // 특징
+            memo: item.memos,                     // 메모
+            group: item.groupName || "기본",     // 그룹
+            tonesInfo: item.tonesInfo || [],     // 톤 리스트
+            selectedToneId: toneId,               // 여기에 defaultToneId가 적용됨
+            tone: toneObj?.name || "",           // 톤 이름
+          };
+        });
+
         setContacts(mappedContacts);
       } catch (error) {
         console.error("연락처 불러오기 오류:", error);
@@ -69,6 +78,7 @@ const ContactList = ({
       fetchContacts();
     }
   }, [memberId]);
+
 
   const [activeGroups, setActiveGroups] = useState([]);
 
@@ -153,12 +163,20 @@ const ContactList = ({
     setIsAllChecked(!isAllChecked);
   };
 
-  const handleDelete = (id) => {
-    const remainingContacts = contacts.filter((contact) => contact.id !== id);
-    setContacts(remainingContacts);
-    setSelectedContacts((prevSelected) =>
-      prevSelected.filter((selected) => selected.id !== id)
-    );
+  const handleDelete = async (id) => {
+    if (!window.confirm("정말 이 연락처를 삭제하시겠습니까?")) return;
+    try {
+      // 1) DB에서 삭제
+      await deleteFriend(id);
+      // 2) state에서도 삭제
+      setContacts((prev) => prev.filter((c) => c.id !== id));
+      setSelectedContacts((prev) =>
+        prev.filter((c) => c.id !== id)
+      );
+    } catch (err) {
+      console.error("삭제 실패:", err);
+      alert("삭제에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   const toggleDetails = (id) => {
@@ -256,9 +274,9 @@ const ContactList = ({
                 style={
                   isPersonalizeHovered
                     ? {
-                        ...styles.personalizeButton,
-                        ...styles.personalizeButtonHover,
-                      }
+                      ...styles.personalizeButton,
+                      ...styles.personalizeButtonHover,
+                    }
                     : styles.personalizeButton
                 }
                 onClick={openModal}
@@ -272,9 +290,9 @@ const ContactList = ({
                 style={
                   isAddContactHovered
                     ? {
-                        ...styles.personalizeButton,
-                        ...styles.personalizeButtonHover,
-                      }
+                      ...styles.personalizeButton,
+                      ...styles.personalizeButtonHover,
+                    }
                     : styles.personalizeButton
                 }
                 onClick={() => navigate(`/contact-form/${memberId}`)}
@@ -295,7 +313,7 @@ const ContactList = ({
               onComplete={() => setIsModalOpen(false)}
               setContacts={setContacts}
               message={message}
-              //
+            //
             />
           )}
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { askToGPT } from "./ChatService";
 import { FaTimes, FaPaperPlane } from "react-icons/fa";
 
@@ -12,6 +12,16 @@ const ChatbotWindow = ({ onClose }) => {
     const [awaitingField, setAwaitingField] = useState(null); // 어떤 필드를 기다리고 있는지
     const [pendingMessageParams, setPendingMessageParams] = useState(null);
     const [awaitingMessageOnly, setAwaitingMessageOnly] = useState(false);
+    // ① 채팅 영역 ref
+    const bodyRef = useRef(null);
+
+    // ② messages 또는 loading 변경 시 맨 아래로 스크롤
+    useEffect(() => {
+        if (bodyRef.current) {
+            // 부드럽게 스크롤
+            bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+        }
+    }, [messages, loading]);
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -134,7 +144,7 @@ const ChatbotWindow = ({ onClose }) => {
                     <FaTimes />
                 </button>
             </div>
-            <div style={styles.body}>
+            <div style={styles.body} ref={bodyRef}>
                 {messages.map((msg, idx) => (
                     <div
                         key={idx}

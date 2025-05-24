@@ -20,7 +20,7 @@ const Header = () => {
     <header style={styles.header}>
       {/* 왼쪽: 로고 */}
       <div style={styles.leftSection}>
-        <Link to="/" style={styles.logoLink}>
+        <Link to="/main" style={styles.logoLink}>
           <img src={logo} alt="Logo" style={styles.logo} />
         </Link>
       </div>
@@ -61,7 +61,7 @@ const styles = {
     height: "65px",
     padding: "0 30px", // Increased padding from 20px to 30px
     position: "fixed",
-    width: "calc(100%)", 
+    width: "calc(100%)",
     // Adjusted width to account for padding
     top: 0,
     zIndex: 1000,
