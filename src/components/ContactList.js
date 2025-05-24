@@ -43,22 +43,31 @@ const ContactList = ({
       try {
         const response = await getFriendsByMemberId(memberId);
         console.log("📦 불러온 contacts:", response.data);
-        const mappedContacts = response.data.map((item) => ({
-          id: item.id,
-          name: item.friendName,
-          relationType: item.relationType,
-          phone: item.friendPhone,
-          email: item.friendEmail,
-          tag: item.features, // features → tag
-          tone: item.selectedToneId
-            ? item.tonesInfo.find((t) => t.id === item.selectedToneId)?.name ||
-            ""
-            : "",
-          memo: item.memos,
-          group: item.groupName || "기본", // group 필드 없을 경우 대비
-          tonesInfo: item.tonesInfo || [], // tonesInfo 추가
-          selectedToneId: item.selectedToneId || null, // selectedToneId 추가
-        }));
+
+        // 기본 톤 ID 설정
+        const defaultToneId = 13;
+
+        const mappedContacts = response.data.map((item) => {
+          // selectedToneId가 없으면 defaultToneId 사용
+          const toneId = item.selectedToneId ?? defaultToneId;
+          // tonesInfo에서 해당 tone 객체 찾기
+          const toneObj = item.tonesInfo?.find((t) => t.id === toneId);
+
+          return {
+            id: item.id,
+            name: item.friendName,
+            relationType: item.relationType,
+            phone: item.friendPhone,
+            email: item.friendEmail,
+            tag: item.features,                   // 특징
+            memo: item.memos,                     // 메모
+            group: item.groupName || "기본",     // 그룹
+            tonesInfo: item.tonesInfo || [],     // 톤 리스트
+            selectedToneId: toneId,               // 여기에 defaultToneId가 적용됨
+            tone: toneObj?.name || "",           // 톤 이름
+          };
+        });
+
         setContacts(mappedContacts);
       } catch (error) {
         console.error("연락처 불러오기 오류:", error);
@@ -69,6 +78,7 @@ const ContactList = ({
       fetchContacts();
     }
   }, [memberId]);
+
 
   const [activeGroups, setActiveGroups] = useState([]);
 
