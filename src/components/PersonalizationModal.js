@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import MessageAnimation from "../components/MessageAnimation";
-import UploadToneModal from "../components/UploadToneModal"; // 상단 import
-import { convertText } from "../services/PersonalizationService"; // Import the OpenAI service
+import UploadToneModal from "../components/UploadToneModal";
+import { convertText } from "../services/PersonalizationService";
+import { getToneByFriendId } from "../services/ToneService"; // 톤 서비스 추가
 import firstIcon from "../assets/images/firstIcon.png";
 import prevIcon from "../assets/images/prevIcon.png";
 import nextIcon from "../assets/images/nextIcon.png";
@@ -13,37 +14,133 @@ const PersonalizationModal = ({
   convertedTexts,
   setConvertedTexts,
   message,
-  //
 }) => {
-  // 톤 선택 버튼을 렌더링하기 위한 톤 목록
-  // const tones = tonesobj;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [selectedTones, setSelectedTones] = useState({}); // 선택된 톤 상태
+  const [selectedTones, setSelectedTones] = useState({});
+
+  // 톤 상태 관리 추가
+  const [tones, setTones] = useState([]);
+  const [tonesLoading, setTonesLoading] = useState(false);
+  const [currentContactTones, setCurrentContactTones] = useState({}); // 각 연락처별 톤 캐시
 
   const currentContact = selectedContacts[currentIndex];
-  // 기존 isHovering → 새로운 state로 변경
   const [hoveringTarget, setHoveringTarget] = useState(null);
   const [selectedToneExamples, setSelectedToneExamples] = useState([]);
-
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  // handleToneSelection 함수 추가
+  // 현재 연락처가 변경될 때마다 해당 연락처의 톤 목록 가져오기
+  useEffect(() => {
+    const fetchContactTones = async () => {
+      if (!currentContact) return;
+
+      // 이미 캐시된 톤이 있으면 사용
+      if (currentContactTones[currentContact.id]) {
+        setTones(currentContactTones[currentContact.id]);
+        return;
+      }
+
+      try {
+        setTonesLoading(true);
+        const friendTones = await getToneByFriendId(currentContact.id);
+        console.log(`📦 ${currentContact.name}의 어조 목록:`, friendTones);
+
+        const tonesArray = Array.isArray(friendTones) ? friendTones : [];
+        setTones(tonesArray);
+
+        // 캐시에 저장
+        setCurrentContactTones((prev) => ({
+          ...prev,
+          [currentContact.id]: tonesArray,
+        }));
+      } catch (error) {
+        console.error("친구 어조 불러오기 오류:", error);
+        setTones([]);
+      } finally {
+        setTonesLoading(false);
+      }
+    };
+
+    fetchContactTones();
+  }, [currentContact?.id, currentContactTones]);
+
+  // 선택된 톤 ID로 톤 이름 찾기 헬퍼 함수
+  const getToneNameById = (toneId) => {
+    if (!tones || !Array.isArray(tones) || tones.length === 0) {
+      return "";
+    }
+    const tone = tones.find((t) => t.id === toneId);
+    return tone ? tone.name : "";
+  };
+
+  // 선택된 톤으로 예시 업데이트
+  const updateToneExamples = (toneName) => {
+    if (!toneName || !tones.length) {
+      setSelectedToneExamples([]);
+      return;
+    }
+
+    const matchingTone = tones.find((tone) => tone.name === toneName);
+    if (matchingTone && matchingTone.examples) {
+      // examples가 문자열이면 쉼표로 분리, 배열이면 그대로 사용
+      const examples =
+        typeof matchingTone.examples === "string"
+          ? matchingTone.examples
+              .split(",")
+              .map((ex) => ex.trim())
+              .filter((ex) => ex)
+          : Array.isArray(matchingTone.examples)
+          ? matchingTone.examples
+          : [];
+      setSelectedToneExamples(examples);
+    } else {
+      setSelectedToneExamples([]);
+    }
+  };
+
+  // 톤 선택 핸들러
   const handleToneSelection = (toneName) => {
     if (currentContact) {
-      // toneName을 직접 저장 (단일 선택)
       setSelectedTones((prev) => ({
         ...prev,
         [currentContact.id]: toneName,
       }));
 
-      // 해당 톤의 예시 직접 사용
-      const matchingTone = currentContact.tonesInfo.find(
-        (tone) => tone.name === toneName
-      );
-      setSelectedToneExamples(matchingTone?.toneExamples || []); // examples → toneExamples
+      updateToneExamples(toneName);
     }
   };
+
+  // 현재 연락처 변경 시 기본 톤 설정
+  useEffect(() => {
+    if (currentContact && tones.length > 0) {
+      // 이미 선택된 어조가 있으면 유지
+      if (selectedTones[currentContact.id]) {
+        updateToneExamples(selectedTones[currentContact.id]);
+        return;
+      }
+
+      // 연락처에 selectedToneId가 있으면 해당 톤으로 설정
+      if (currentContact.selectedToneId) {
+        const toneName = getToneNameById(currentContact.selectedToneId);
+        if (toneName) {
+          setSelectedTones((prev) => ({
+            ...prev,
+            [currentContact.id]: toneName,
+          }));
+          updateToneExamples(toneName);
+          return;
+        }
+      }
+
+      // 기본값 설정 (첫 번째 톤 또는 빈 문자열)
+      const defaultTone = tones.length > 0 ? tones[0].name : "";
+      setSelectedTones((prev) => ({
+        ...prev,
+        [currentContact.id]: defaultTone,
+      }));
+      updateToneExamples(defaultTone);
+    }
+  }, [currentContact, tones, selectedTones]);
 
   const handleComplete = () => {
     closeModal();
@@ -59,34 +156,7 @@ const PersonalizationModal = ({
     );
   };
 
-  // 현재 연락처의 기본 선택된 어조 설정 (useEffect 수정)
-  useEffect(() => {
-    if (currentContact) {
-      // 이미 선택된 어조가 있으면 유지, 없으면 기본 어조로 초기화
-      setSelectedTones((prev) => {
-        if (prev[currentContact.id]) return prev; // 기존 선택값 유지
-        return {
-          ...prev,
-          [currentContact.id]: currentContact.tone || "", // 기본값은 빈 문자열
-        };
-      });
-
-      // 기본 선택된 어조의 예시 가져오기
-      if (currentContact.tone) {
-        // 현재 선택된 톤 정보 찾기
-        const matchingTone = currentContact.tonesInfo.find(
-          (tone) => tone.name === currentContact.tone
-        );
-
-        // 해당 톤의 예시 직접 사용
-        setSelectedToneExamples(matchingTone?.toneExamples || []); // examples → toneExamples
-      } else {
-        setSelectedToneExamples([]); // 예시가 없으면 빈 배열
-      }
-    }
-  }, [currentContact]);
-
-  // handleConvert 함수 수정
+  // 텍스트 변환 핸들러
   const handleConvert = async () => {
     const textToConvert = convertedTexts[currentContact.id] || "";
     if (!textToConvert) {
@@ -94,18 +164,16 @@ const PersonalizationModal = ({
       return;
     }
 
-    const selectedToneName = selectedTones[currentContact.id]; // 선택된 톤 이름
-
+    const selectedToneName = selectedTones[currentContact.id];
     if (!selectedToneName) {
       alert("어조를 선택해주세요.");
       return;
     }
 
-    // currentContact.tonesInfo에서 선택된 톤 정보를 찾음
-    const selectedToneData = currentContact.tonesInfo?.find(
+    // 현재 톤 목록에서 선택된 톤 정보 찾기
+    const selectedToneData = tones.find(
       (tone) => tone.name === selectedToneName
     );
-
     if (!selectedToneData) {
       alert("선택된 톤에 대한 데이터를 찾을 수 없습니다.");
       return;
@@ -114,11 +182,10 @@ const PersonalizationModal = ({
     setLoading(true);
 
     try {
-      // 선택된 톤의 ID와 텍스트만 전달하는 방식으로 변경
       const originalMessage = await convertText({
         originalText: textToConvert,
         toneId: selectedToneData.id,
-        friendId: currentContact.id, // 친구 ID 추가
+        friendId: currentContact.id,
       });
 
       const cleanedMessage = removeEmojis(originalMessage);
@@ -150,10 +217,11 @@ const PersonalizationModal = ({
       [currentContact.id]: value,
     }));
   };
+
   const initMessage = () => {
     setConvertedTexts((prev) => ({
       ...prev,
-      [currentContact.id]: message, // 현재 연락처의 텍스트를 기본 메시지로 변경
+      [currentContact.id]: message,
     }));
   };
 
@@ -161,6 +229,7 @@ const PersonalizationModal = ({
     <div style={styles.modalOverlay}>
       <div style={styles.modalContent}>
         {loading && <MessageAnimation />}
+
         {/* 왼쪽 영역 */}
         <div style={styles.leftSection}>
           <div style={styles.titleWithInlineButton}>
@@ -183,7 +252,7 @@ const PersonalizationModal = ({
                 <label>특징:</label>
                 <input
                   type="text"
-                  value={currentContact.tag}
+                  value={currentContact.tag || ""}
                   readOnly
                   style={styles.inputField}
                 />
@@ -193,7 +262,7 @@ const PersonalizationModal = ({
                 <label>기억:</label>
                 <input
                   type="text"
-                  value={currentContact.memo}
+                  value={currentContact.memo || ""}
                   readOnly
                   style={styles.inputField}
                 />
@@ -202,9 +271,12 @@ const PersonalizationModal = ({
               <div style={styles.toneSelection}>
                 <label>말투 선택:</label>
                 <div style={styles.toneButtons}>
-                  {/* 현재 연락처의 모든 tonesInfo 사용 (중복 제거 없음) */}
-                  {currentContact.tonesInfo &&
-                    currentContact.tonesInfo.map((tone) => (
+                  {tonesLoading ? (
+                    <div style={styles.loadingText}>
+                      어조 목록을 불러오는 중...
+                    </div>
+                  ) : tones.length > 0 ? (
+                    tones.map((tone) => (
                       <button
                         key={tone.id}
                         type="button"
@@ -220,10 +292,17 @@ const PersonalizationModal = ({
                               : "black",
                         }}
                         onClick={() => handleToneSelection(tone.name)}
+                        title={tone.instruction} // 툴팁으로 설명 표시
                       >
                         {tone.name}
                       </button>
-                    ))}
+                    ))
+                  ) : (
+                    <div style={styles.noTonesText}>
+                      해당 친구의 어조가 없습니다.
+                    </div>
+                  )}
+
                   <button
                     type="button"
                     style={{
@@ -244,7 +323,7 @@ const PersonalizationModal = ({
                   </button>
                 </div>
 
-                {/* 선택된 어조의 예시 표시 - 스크롤바 추가 */}
+                {/* 선택된 어조의 예시 표시 */}
                 <div style={styles.examples}>
                   {selectedToneExamples.length > 0 ? (
                     <>
@@ -271,24 +350,40 @@ const PersonalizationModal = ({
           )}
         </div>
 
-        {/* 업로드 모달 부분 수정 - 새로운 어조가 추가되면 현재 연락처의 tonesInfo에도 추가 */}
+        {/* 업로드 모달 */}
         {showUploadModal && (
           <UploadToneModal
             onClose={() => setShowUploadModal(false)}
             friendId={currentContact?.id}
             onToneGenerated={(newTone) => {
-              // 현재 연락처의 tonesInfo에 새 어조 추가
-              if (currentContact && currentContact.tonesInfo) {
-                currentContact.tonesInfo.push({
-                  id: Date.now(), // 임시 ID 생성
-                  name: newTone.label,
-                  default: false,
-                });
-              }
+              // 새 어조가 생성되면 현재 톤 목록에 추가
+              const newToneData = {
+                id: Date.now(),
+                name: newTone.label,
+                instruction: newTone.instruction || "",
+                examples: newTone.examples || "",
+                friend_id: currentContact.id,
+                default: false,
+              };
+
+              setTones((prevTones) => [...prevTones, newToneData]);
+
+              // 캐시도 업데이트
+              setCurrentContactTones((prev) => ({
+                ...prev,
+                [currentContact.id]: [
+                  ...(prev[currentContact.id] || []),
+                  newToneData,
+                ],
+              }));
+
+              // 새 어조를 선택 상태로 설정
               setSelectedTones((prev) => ({
                 ...prev,
                 [currentContact.id]: newTone.label,
               }));
+
+              updateToneExamples(newTone.label);
             }}
           />
         )}
@@ -319,7 +414,7 @@ const PersonalizationModal = ({
                 ...styles.resetButton,
                 ...(hoveringTarget === "reset" && styles.resetButtonHover),
               }}
-              title="원본 메시지로 초기화" // 툴팁으로 설명 추가
+              title="원본 메시지로 초기화"
             >
               ↺
             </button>
@@ -327,10 +422,11 @@ const PersonalizationModal = ({
 
           <textarea
             style={styles.textArea}
-            value={convertedTexts[currentContact.id] || ""}
+            value={convertedTexts[currentContact?.id] || ""}
             onChange={handleTextChange}
             placeholder="여기에 텍스트가 표시됩니다."
           />
+
           <div style={styles.pagination}>
             <button
               onClick={() => setCurrentIndex(0)}
@@ -407,8 +503,8 @@ const PersonalizationModal = ({
                 alt="다음으로 이동"
                 style={{
                   width: "11px",
-                  height: "auto", // 👉 원본 비율 유지
-                  objectFit: "contain", // 👉 필요 시 비율 보존
+                  height: "auto",
+                  objectFit: "contain",
                   marginTop: "2px",
                   opacity:
                     currentIndex === selectedContacts.length - 1 ? 0.4 : 1,
@@ -437,8 +533,8 @@ const PersonalizationModal = ({
                 alt="끝으로 이동"
                 style={{
                   width: "15px",
-                  height: "auto", // 👉 원본 비율 유지
-                  objectFit: "contain", // 👉 필요 시 비율 보존
+                  height: "auto",
+                  objectFit: "contain",
                   marginTop: "5px",
                   opacity:
                     currentIndex === selectedContacts.length - 1 ? 0.4 : 1,
@@ -451,9 +547,6 @@ const PersonalizationModal = ({
             <button onClick={closeModal} style={styles.closeButton}>
               닫기
             </button>
-            {/* <button onClick={onComplete} style={styles.completeButton}>
-            완료
-          </button> */}
             <button onClick={handleComplete} style={styles.completeButton}>
               완료
             </button>
@@ -463,6 +556,7 @@ const PersonalizationModal = ({
     </div>
   );
 };
+
 const styles = {
   modalOverlay: {
     position: "fixed",
@@ -480,42 +574,37 @@ const styles = {
     backgroundColor: "white",
     padding: "30px",
     borderRadius: "12px",
-    width: "1200px", // 너비 증가
-    height: "98%", // 높이 증가
+    width: "1200px",
+    height: "98%",
     boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
     zIndex: 1001,
-    display: "flex", // 좌우 레이아웃
-    gap: "20px", // 좌우 간격
+    display: "flex",
+    gap: "20px",
     overflowY: "auto",
   },
   leftSection: {
-    flex: 1.7, // 왼쪽 섹션 크기 조정
+    flex: 1.7,
     display: "flex",
     flexDirection: "column",
     gap: "15px",
   },
   rightSection: {
-    flex: 1.4, // 오른쪽 섹션 크기 조정
+    flex: 1.4,
     display: "flex",
     flexDirection: "column",
     gap: "20px",
   },
   textArea: {
-    flex: 1, // 오른쪽 영역에서 입력창이 충분히 커지도록
+    flex: 1,
     marginTop: "15px",
     padding: "12px",
     fontSize: "18px",
-    lineHeight: "1.6", // 줄 간격 조정 (가독성 향상)
+    lineHeight: "1.6",
     borderRadius: "6px",
     border: "1px solid #ccc",
     resize: "none",
     boxSizing: "border-box",
     height: "400px",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
   },
   inputGroup: {
     display: "flex",
@@ -545,6 +634,18 @@ const styles = {
     backgroundColor: "#FFFFFF",
     color: "black",
   },
+  loadingText: {
+    padding: "10px",
+    textAlign: "center",
+    color: "#666",
+    fontStyle: "italic",
+  },
+  noTonesText: {
+    padding: "10px",
+    textAlign: "center",
+    color: "#999",
+    fontSize: "14px",
+  },
   convertSection: {
     display: "flex",
     alignItems: "center",
@@ -554,10 +655,10 @@ const styles = {
   convertLabel: {
     fontSize: "16px",
     fontWeight: "bold",
-    color: "#4A90E2", // 라벨 색상
+    color: "#4A90E2",
   },
   convertButton: {
-    backgroundColor: "#4A90E2", // 버튼 색상
+    backgroundColor: "#4A90E2",
     color: "white",
     border: "none",
     padding: "8px 15px",
@@ -565,16 +666,16 @@ const styles = {
     cursor: "pointer",
     transition: "background-color 0.3s",
   },
-
-  // 페이지네이션 컨테이너 스타일 수정
+  convertButtonHover: {
+    backgroundColor: "#3a78c2",
+  },
   pagination: {
     display: "flex",
-    justifyContent: "center", // 중앙 정렬
-    alignItems: "center", // 수직 중앙 정렬
-    gap: "40px", // 버튼 사이 간격 늘림
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "40px",
     marginTop: "15px",
   },
-
   navButton: {
     backgroundColor: "transparent",
     color: "#4A90E2",
@@ -584,38 +685,30 @@ const styles = {
     transition: "all 0.2s",
     fontWeight: "bold",
     minWidth: "30px",
-    height: "30px", // 높이 고정
+    height: "30px",
     display: "flex",
     justifyContent: "center",
-    alignItems: "center", // 수직 정렬
+    alignItems: "center",
     boxShadow: "none",
-    lineHeight: 1, // 라인 높이를 1로 통일
+    lineHeight: 1,
   },
-
   pageInfo: {
     fontSize: "16px",
     fontWeight: "",
-    color: "#333", // 색상 변경
-    margin: "0 10px", // 좌우 여백 추가
+    color: "#333",
+    margin: "0 10px",
   },
-
-  // disabled 상태일 때의 스타일도 추가
   navButtonDisabled: {
-    color: "#cccccc", // 비활성화 상태일 때 연한 회색
-    cursor: "default", // 비활성화 상태일 때 커서 변경
+    color: "#cccccc",
+    cursor: "default",
   },
-
-  // hover 상태일 때의 스타일 추가
   navButtonHover: {
-    backgroundColor: "#f0f0f0", // 호버 시 회색 음영 배경
-    // 기존 transform 제거
-    // 기존 color 변경도 필요 시 유지 가능
+    backgroundColor: "#f0f0f0",
   },
-
   buttonGroup: {
     display: "flex",
     justifyContent: "space-between",
-    gap: "10px", // 닫기와 완료 버튼 간격 추가
+    gap: "10px",
     marginTop: "20px",
   },
   closeButton: {
@@ -629,7 +722,7 @@ const styles = {
     transition: "background-color 0.3s",
   },
   completeButton: {
-    backgroundColor: "#4A90E2", // 완료 버튼 색상
+    backgroundColor: "#4A90E2",
     color: "white",
     border: "none",
     padding: "12px 20px",
@@ -642,46 +735,43 @@ const styles = {
     backgroundColor: "white",
     color: "black",
     fontSize: "22px",
-    fontWeight: "500", // 중간 정도 두께로 설정 (normal과 bold 사이)
-    padding: "7px 11px", // 패딩 약간 증가
+    fontWeight: "500",
+    padding: "7px 11px",
     cursor: "pointer",
     marginLeft: "auto",
     transition: "all 0.3s ease",
-    border: "none", // ✅ 테두리 없애기
+    border: "none",
   },
   resetButtonHover: {
-    backgroundColor: "#f0f0f0", // hover 시 밝은 회색 배경
+    backgroundColor: "#f0f0f0",
   },
   examples: {
-    marginTop: "20px", // 어조 선택 버튼과 예시 간의 간격
+    marginTop: "20px",
     padding: "15px",
     backgroundColor: "#f9f9f9",
     borderRadius: "8px",
     border: "1px solid #e0e0e0",
     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
   },
-  // 스크롤바 컨테이너 추가
   examplesContainer: {
     maxHeight: "290px",
     overflowY: "auto",
     marginRight: "-5px",
     paddingRight: "5px",
-    scrollbarWidth: "thin", // Firefox용은 남겨둘 수 있음
-    // 아래 &::-webkit-scrollbar 관련 스타일은 제거
+    scrollbarWidth: "thin",
   },
-
   examplesDescription: {
     fontSize: "14px",
     fontWeight: "bold",
     color: "#4A90E2",
-    marginBottom: "15px", // 설명과 예시 카드 간의 간격
+    marginBottom: "15px",
   },
   exampleCard: {
     backgroundColor: "#ffffff",
     padding: "10px",
     borderRadius: "6px",
     border: "1px solid #ddd",
-    marginBottom: "15px", // 각 예시 카드 간의 간격
+    marginBottom: "15px",
     boxShadow: "0px 1px 3px rgba(0, 0, 0, 0.1)",
   },
   exampleText: {
@@ -697,31 +787,8 @@ const styles = {
   titleWithInlineButton: {
     display: "flex",
     alignItems: "center",
-    gap: "12px", // 제목과 버튼 사이 간격
+    gap: "12px",
     marginBottom: "20px",
-  },
-  inlineToneExtractButton: {
-    backgroundColor: "#4A90E2",
-    color: "white",
-    border: "none",
-    padding: "10px 20px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontSize: "12px",
-    fontWeight: "regular",
-    transition: "0.3s",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-    height: "32px", // 텍스트 높이와 잘 맞게
-    lineHeight: "1", // 텍스트 수직 정렬
-  },
-  convertButtonHover: {
-    backgroundColor: "#3a78c2",
-  },
-
-  inlineToneExtractButtonHover: {
-    backgroundColor: "#3a78c2",
-    transform: "scale(1.05)",
-    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
   },
   inlineTitle: {
     margin: 0,
