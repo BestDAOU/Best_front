@@ -13,6 +13,7 @@ import LandingPage from "./pages/LandingPage";
 import MainPageMobile from "./pages/MainPageMobile"; // ✅ 모바일 페이지 추가
 import PlatformRouter from './components/PlatformRouter';
 import ChatbotWidget from "./components/chatbot/ChatbotWidget"; // ✅ 챗봇 위젯 import
+import { NotificationProvider } from "./components/Notification";
 
 // 보호된 라우트 컴포넌트
 const ProtectedRoute = ({ children }) => {
@@ -117,9 +118,11 @@ const AppContent = () => {
 function App() {
   return (
     <UserProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <NotificationProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </NotificationProvider>
     </UserProvider>
   );
 }

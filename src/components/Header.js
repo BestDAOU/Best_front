@@ -3,6 +3,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/images/logo.png";
 import { useUser } from "../store/UserContext";
+import { useNotification } from "../components/Notification"; // 알림 컴포넌트 import
 
 const Header = () => {
   const { user, setUser } = useUser();

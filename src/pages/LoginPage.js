@@ -4,11 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../store/UserContext";
 import { loginMember } from "../services/MemberService";
 import { detectPlatform } from '../utils/platformDetector';
+import { useNotification } from "../components/Notification"; // 알림 컴포넌트 import
 
 const LoginPage = () => {
   const { register, handleSubmit } = useForm();
   const { setUser } = useUser();
   const navigate = useNavigate();
+  const notification = useNotification();
 
   // const onSubmit = async (data) => {
   //   try {
@@ -32,7 +34,7 @@ const LoginPage = () => {
       setUser(userInfo);
       localStorage.setItem("memberId", userInfo.id);
       localStorage.setItem("memberName", userInfo.name);
-      alert("로그인 성공!");
+      notification.showSuccess('로그인 성공!', '환영합니다');
       
       // 플랫폼 감지 후 적절한 페이지로 이동
       const platform = detectPlatform();
