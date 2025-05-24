@@ -5,7 +5,7 @@ import './LandingPage.css';
 import appScreenshot from '../assets/images/app-screenshot.png';
 import bestRanding from '../assets/videos/best_randing.mp4';
 import thumbnail from '../assets/images/thumbnail.png';
-
+import { detectPlatform } from '../utils/platformDetector';
 
 // 데이터 파일
 import {
@@ -18,6 +18,18 @@ import {
 } from '../data/landingContent';
 
 const LandingPage = () => {
+  
+  // 플랫폼 감지 및 네비게이션
+  const handleNavigate = () => {
+    const platform = detectPlatform();
+    
+    if (platform.isMobile) {
+      navigate('/main-mobile');
+    } else {
+      navigate('/main');
+    }
+  };
+
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
@@ -65,7 +77,8 @@ const LandingPage = () => {
                 }`}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
-                onClick={() => navigate('/main')}
+                // onClick={() => navigate('/main')}
+                onClick={handleNavigate}
               >
                 메시지 전송하러 가기<span className="ml-2">→</span>
               </button>
