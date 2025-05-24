@@ -1,4 +1,4 @@
-// ContactListMobile.js - 모바일 전용 연락처 리스트
+// ContactListMobile.js - 모바일 전용 연락처 리스트 (톤 상태관리 분리)
 import React, { useState, useEffect } from "react";
 import {
   FaTrash,
@@ -16,7 +16,8 @@ import {
 import PersonalizationModal from "./PersonalizationModal";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { getFriendsByMemberId } from "../services/FriendsService";
+import { getFriendsByMemberId, deleteFriend } from "../services/FriendsService";
+import { getToneByFriendId } from "../services/ToneService"; // 톤 서비스 추가
 
 const ContactListMobile = ({
   message,
@@ -32,9 +33,10 @@ const ContactListMobile = ({
   const [isAllChecked, setIsAllChecked] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [editData, setEditData] = useState({
+    name: "",
+    phone: "",
     tag: "",
     memo: "",
-    tone: "",
     selectedToneId: null,
   });
 
@@ -42,11 +44,17 @@ const ContactListMobile = ({
   const [activeGroups, setActiveGroups] = useState([]);
   const [isGroupDropdownOpen, setIsGroupDropdownOpen] = useState(false);
 
+  // 톤 상태관리 추가
+  const [tones, setTones] = useState([]);
+  const [tonesLoading, setTonesLoading] = useState(false);
+
+  // 연락처 목록 가져오기 (톤 정보 제거)
   useEffect(() => {
     const fetchContacts = async () => {
       try {
         const response = await getFriendsByMemberId(memberId);
-        console.log("📦 불러온 contacts:", response.data);
+        console.log("📦 모바일 - 불러온 contacts:", response.data);
+
         const mappedContacts = response.data.map((item) => ({
           id: item.id,
           name: item.friendName,
@@ -54,14 +62,9 @@ const ContactListMobile = ({
           phone: item.friendPhone,
           email: item.friendEmail,
           tag: item.features,
-          tone: item.selectedToneId
-            ? item.tonesInfo.find((t) => t.id === item.selectedToneId)?.name ||
-              ""
-            : "",
           memo: item.memos,
           group: item.groupName || "기본",
-          tonesInfo: item.tonesInfo || [],
-          selectedToneId: item.selectedToneId || null,
+          selectedToneId: item.selectedToneId || 13,
         }));
         setContacts(mappedContacts);
       } catch (error) {
@@ -73,6 +76,15 @@ const ContactListMobile = ({
       fetchContacts();
     }
   }, [memberId]);
+
+  // 선택된 톤 ID로 톤 이름 찾기 헬퍼 함수
+  const getToneNameById = (toneId) => {
+    if (!tones || !Array.isArray(tones) || tones.length === 0) {
+      return "";
+    }
+    const tone = tones.find((t) => t.id === toneId);
+    return tone ? tone.name : "";
+  };
 
   const toggleGroup = (groupName) => {
     if (activeGroups.includes(groupName)) {
@@ -151,16 +163,40 @@ const ContactListMobile = ({
     setIsAllChecked(!isAllChecked);
   };
 
-  const handleDelete = (id) => {
-    const remainingContacts = contacts.filter((contact) => contact.id !== id);
-    setContacts(remainingContacts);
-    setSelectedContacts((prevSelected) =>
-      prevSelected.filter((selected) => selected.id !== id)
-    );
+  const handleDelete = async (id) => {
+    if (!window.confirm("정말 이 연락처를 삭제하시겠습니까?")) return;
+    try {
+      await deleteFriend(id);
+      setContacts((prev) => prev.filter((c) => c.id !== id));
+      setSelectedContacts((prev) => prev.filter((c) => c.id !== id));
+    } catch (err) {
+      console.error("삭제 실패:", err);
+      alert("삭제에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
-  const toggleDetails = (id) => {
-    setExpandedContactId(expandedContactId === id ? null : id);
+  const toggleDetails = async (id) => {
+    const isExpanding = expandedContactId !== id;
+    setExpandedContactId(isExpanding ? id : null);
+
+    // 상세보기를 펼칠 때 해당 친구의 어조 목록 가져오기
+    if (isExpanding) {
+      try {
+        setTonesLoading(true);
+        const friendTones = await getToneByFriendId(id);
+        console.log(`📦 모바일 - ${id}번 친구 어조 목록:`, friendTones);
+
+        setTones(Array.isArray(friendTones) ? friendTones : []);
+      } catch (error) {
+        console.error("친구 어조 불러오기 오류:", error);
+        setTones([]);
+      } finally {
+        setTonesLoading(false);
+      }
+    } else {
+      // 세부사항을 닫을 때 tones 초기화
+      setTones([]);
+    }
   };
 
   const handleEdit = (contact) => {
@@ -170,7 +206,6 @@ const ContactListMobile = ({
       phone: contact.phone,
       tag: contact.tag,
       memo: contact.memo,
-      tone: contact.tone,
       selectedToneId: contact.selectedToneId,
     });
   };
@@ -198,7 +233,6 @@ const ContactListMobile = ({
   const handleToneSelection = (toneId, toneName) => {
     setEditData((prevData) => ({
       ...prevData,
-      tone: toneName,
       selectedToneId: toneId,
     }));
   };
@@ -225,10 +259,12 @@ const ContactListMobile = ({
             style={styles.groupDropdownButton}
             onClick={() => setIsGroupDropdownOpen(!isGroupDropdownOpen)}
           >
-            <span>그룹 선택 {activeGroups.length > 0 && `(${activeGroups.length})`}</span>
+            <span>
+              그룹 선택 {activeGroups.length > 0 && `(${activeGroups.length})`}
+            </span>
             {isGroupDropdownOpen ? <FaChevronUp /> : <FaChevronDown />}
           </button>
-          
+
           {isGroupDropdownOpen && (
             <div style={styles.groupDropdown}>
               {uniqueGroups.map((group) => (
@@ -239,7 +275,9 @@ const ContactListMobile = ({
                     onChange={() => toggleGroup(group)}
                     style={styles.groupCheckbox}
                   />
-                  <span>{group} ({groupCounts[group]})</span>
+                  <span>
+                    {group} ({groupCounts[group]})
+                  </span>
                 </label>
               ))}
             </div>
@@ -296,7 +334,7 @@ const ContactListMobile = ({
                   onChange={() => handleCheckboxChange(contact.id)}
                   style={styles.contactCheckbox}
                 />
-                
+
                 <div style={styles.contactMainInfo}>
                   <div style={styles.contactName}>
                     <FaUser size={12} />
@@ -312,8 +350,11 @@ const ContactListMobile = ({
                   <button
                     style={styles.detailsToggle}
                     onClick={() => toggleDetails(contact.id)}
+                    disabled={tonesLoading && expandedContactId !== contact.id}
                   >
-                    {expandedContactId === contact.id ? (
+                    {tonesLoading && expandedContactId === contact.id ? (
+                      "로딩..."
+                    ) : expandedContactId === contact.id ? (
                       <FaChevronUp size={14} />
                     ) : (
                       <FaChevronDown size={14} />
@@ -409,8 +450,12 @@ const ContactListMobile = ({
                       <div style={styles.editField}>
                         <label>어조 선택:</label>
                         <div style={styles.toneButtons}>
-                          {contact.tonesInfo &&
-                            contact.tonesInfo.map((tone) => (
+                          {tonesLoading ? (
+                            <div style={styles.loadingText}>
+                              어조 목록을 불러오는 중...
+                            </div>
+                          ) : tones.length > 0 ? (
+                            tones.map((tone) => (
                               <button
                                 key={tone.id}
                                 onClick={() =>
@@ -427,10 +472,16 @@ const ContactListMobile = ({
                                       ? "white"
                                       : "#333",
                                 }}
+                                title={tone.instruction} // 툴팁으로 설명 표시
                               >
                                 {tone.name}
                               </button>
-                            ))}
+                            ))
+                          ) : (
+                            <div style={styles.noTonesText}>
+                              해당 친구의 어조가 없습니다.
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -444,11 +495,14 @@ const ContactListMobile = ({
                       </div>
                       <div style={styles.infoRow}>
                         <strong>어조:</strong>
-                        {contact.selectedToneId && (
+                        {contact.selectedToneId ? (
                           <span style={styles.toneTag}>
-                            {contact.tonesInfo.find(
-                              (t) => t.id === contact.selectedToneId
-                            )?.name || ""}
+                            {getToneNameById(contact.selectedToneId) ||
+                              "어조 정보 없음"}
+                          </span>
+                        ) : (
+                          <span style={{ color: "#999" }}>
+                            어조가 설정되지 않음
                           </span>
                         )}
                       </div>
@@ -459,9 +513,7 @@ const ContactListMobile = ({
             </div>
           ))
         ) : (
-          <div style={styles.noContacts}>
-            선택한 그룹에 연락처가 없습니다.
-          </div>
+          <div style={styles.noContacts}>선택한 그룹에 연락처가 없습니다.</div>
         )}
       </div>
 
@@ -773,6 +825,19 @@ const styles = {
     cursor: "pointer",
     fontSize: "12px",
     transition: "all 0.2s",
+  },
+  loadingText: {
+    padding: "10px",
+    textAlign: "center",
+    color: "#666",
+    fontStyle: "italic",
+    fontSize: "12px",
+  },
+  noTonesText: {
+    padding: "10px",
+    textAlign: "center",
+    color: "#999",
+    fontSize: "12px",
   },
   displayInfo: {
     display: "flex",
