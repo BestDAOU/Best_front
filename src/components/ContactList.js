@@ -14,7 +14,7 @@ import PersonalizationModal from "./PersonalizationModal";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getFriendsByMemberId } from "../services/FriendsService"; // ✅ DB API 호출
-
+import { getToneByFriendId } from "../services/ToneService";
 const ContactList = ({
   message,
   convertedTexts,
@@ -38,6 +38,11 @@ const ContactList = ({
 
   const contactsobj = useSelector((state) => state.contacts); // Redux에서 상태 가져오기
   const [contacts, setContacts] = useState([]);
+
+  const [tones, setTones] = useState([]);
+  const [tonesLoading, setTonesLoading] = useState(false);
+
+  // 연락처 목록 가져오기
   useEffect(() => {
     const fetchContacts = async () => {
       try {
@@ -49,15 +54,10 @@ const ContactList = ({
           relationType: item.relationType,
           phone: item.friendPhone,
           email: item.friendEmail,
-          tag: item.features, // features → tag
-          tone: item.selectedToneId
-            ? item.tonesInfo.find((t) => t.id === item.selectedToneId)?.name ||
-              ""
-            : "",
+          tag: item.features,
           memo: item.memos,
-          group: item.groupName || "기본", // group 필드 없을 경우 대비
-          tonesInfo: item.tonesInfo || [], // tonesInfo 추가
-          selectedToneId: item.selectedToneId || null, // selectedToneId 추가
+          group: item.groupName || "기본",
+          selectedToneId: item.selectedToneId || null,
         }));
         setContacts(mappedContacts);
       } catch (error) {
@@ -70,8 +70,34 @@ const ContactList = ({
     }
   }, [memberId]);
 
-  const [activeGroups, setActiveGroups] = useState([]);
+  // 톤 목록 가져오기
+  useEffect(() => {
+    const fetchTones = async () => {
+      try {
+        setTonesLoading(true);
+        const response = await getToneByFriendId(memberId);
+        console.log("📦 불러온 tones:", response);
+        setTones(response.data);
+      } catch (error) {
+        console.error("톤 불러오기 오류:", error);
+        setTones([]);
+      } finally {
+        setTonesLoading(false);
+      }
+    };
 
+    if (memberId) {
+      fetchTones();
+    }
+  }, [memberId]);
+
+  // 선택된 톤 ID로 톤 이름 찾기 헬퍼 함수
+  const getToneNameById = (toneId) => {
+    const tone = tones.find((t) => t.id === toneId);
+    return tone ? tone.name : "";
+  };
+
+  const [activeGroups, setActiveGroups] = useState([]);
   const [isPersonalizeHovered, setIsPersonalizeHovered] = useState(false);
   const [isAddContactHovered, setIsAddContactHovered] = useState(false);
 
@@ -161,8 +187,15 @@ const ContactList = ({
     );
   };
 
-  const toggleDetails = (id) => {
-    setExpandedContactId(expandedContactId === id ? null : id);
+  const toggleDetails = async (id) => {
+    const isExpanding = expandedContactId !== id;
+    setExpandedContactId(isExpanding ? id : null);
+
+    // 상세보기를 펼칠 때 해당 친구의 어조 목록 가져오기
+    if (isExpanding) {
+      const friendTones = await getToneByFriendId(id);
+      setTones(friendTones || []); // 친구별 어조로 업데이트
+    }
   };
 
   const handleEdit = (contact) => {
@@ -172,7 +205,7 @@ const ContactList = ({
       phone: contact.phone,
       tag: contact.tag,
       memo: contact.memo,
-      tone: contact.tone,
+      tone: getToneNameById(contact.selectedToneId), // 톤 이름 설정
       selectedToneId: contact.selectedToneId, // selectedToneId 추가
     });
   };
@@ -295,7 +328,6 @@ const ContactList = ({
               onComplete={() => setIsModalOpen(false)}
               setContacts={setContacts}
               message={message}
-              //
             />
           )}
 
@@ -352,8 +384,13 @@ const ContactList = ({
                               ? styles.detailsButtonActive
                               : styles.detailsButton
                           }
+                          disabled={
+                            tonesLoading && expandedContactId !== contact.id
+                          }
                         >
-                          {expandedContactId === contact.id ? (
+                          {tonesLoading && expandedContactId === contact.id ? (
+                            "로딩..."
+                          ) : expandedContactId === contact.id ? (
                             <FaChevronUp />
                           ) : (
                             <FaChevronDown />
@@ -432,9 +469,12 @@ const ContactList = ({
                               <strong>어조 선택:</strong>
                             </p>
                             <div style={styles.toneButtons}>
-                              {/* 해당 연락처의 tonesInfo 사용 */}
-                              {contact.tonesInfo &&
-                                contact.tonesInfo.map((tone) => (
+                              {tonesLoading ? (
+                                <div style={styles.loadingText}>
+                                  어조 목록을 불러오는 중...
+                                </div>
+                              ) : tones.length > 0 ? (
+                                tones.map((tone) => (
                                   <button
                                     key={tone.id}
                                     onClick={() =>
@@ -451,10 +491,16 @@ const ContactList = ({
                                           ? "white"
                                           : "black",
                                     }}
+                                    title={tone.instruction} // 어조 설명을 툴팁으로 표시
                                   >
                                     {tone.name}
                                   </button>
-                                ))}
+                                ))
+                              ) : (
+                                <div style={styles.noTonesText}>
+                                  해당 친구의 어조가 없습니다.
+                                </div>
+                              )}
                             </div>
                           </>
                         ) : (
@@ -468,16 +514,19 @@ const ContactList = ({
 
                             <p>
                               <strong>어조:</strong>{" "}
-                              {contact.selectedToneId && (
+                              {contact.selectedToneId ? (
                                 <span
                                   style={{
                                     ...styles.toneTag,
                                     display: "inline-block",
                                   }}
                                 >
-                                  {contact.tonesInfo.find(
-                                    (t) => t.id === contact.selectedToneId
-                                  )?.name || ""}
+                                  {getToneNameById(contact.selectedToneId) ||
+                                    "어조 정보 없음"}
+                                </span>
+                              ) : (
+                                <span style={{ color: "#999" }}>
+                                  어조가 설정되지 않음
                                 </span>
                               )}
                             </p>
