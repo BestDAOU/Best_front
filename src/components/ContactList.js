@@ -65,12 +65,12 @@ const ContactList = ({
             relationType: item.relationType,
             phone: item.friendPhone,
             email: item.friendEmail,
-            tag: item.features,                   // 특징
-            memo: item.memos,                     // 메모
-            group: item.groupName || "기본",     // 그룹
-           
-            selectedToneId: toneId,               // 여기에 defaultToneId가 적용됨
-            tone: toneObj?.name || "",           // 톤 이름
+            tag: item.features, // 특징
+            memo: item.memos, // 메모
+            group: item.groupName || "기본", // 그룹
+
+            selectedToneId: toneId, // 여기에 defaultToneId가 적용됨
+            tone: toneObj?.name || "", // 톤 이름
           };
         });
         setContacts(mappedContacts);
@@ -107,6 +107,10 @@ const ContactList = ({
 
   // 선택된 톤 ID로 톤 이름 찾기 헬퍼 함수
   const getToneNameById = (toneId) => {
+    // null, undefined, 빈 배열 체크 추가
+    if (!tones || !Array.isArray(tones) || tones.length === 0) {
+      return "";
+    }
     const tone = tones.find((t) => t.id === toneId);
     return tone ? tone.name : "";
   };
@@ -200,9 +204,7 @@ const ContactList = ({
       await deleteFriend(id);
       // 2) state에서도 삭제
       setContacts((prev) => prev.filter((c) => c.id !== id));
-      setSelectedContacts((prev) =>
-        prev.filter((c) => c.id !== id)
-      );
+      setSelectedContacts((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       console.error("삭제 실패:", err);
       alert("삭제에 실패했습니다. 다시 시도해주세요.");
@@ -217,6 +219,8 @@ const ContactList = ({
     if (isExpanding) {
       const friendTones = await getToneByFriendId(id);
       setTones(friendTones || []); // 친구별 어조로 업데이트
+
+      console.log("현재 어조 가져온 상태: ", friendTones);
     }
   };
 
@@ -311,9 +315,9 @@ const ContactList = ({
                 style={
                   isPersonalizeHovered
                     ? {
-                      ...styles.personalizeButton,
-                      ...styles.personalizeButtonHover,
-                    }
+                        ...styles.personalizeButton,
+                        ...styles.personalizeButtonHover,
+                      }
                     : styles.personalizeButton
                 }
                 onClick={openModal}
@@ -327,9 +331,9 @@ const ContactList = ({
                 style={
                   isAddContactHovered
                     ? {
-                      ...styles.personalizeButton,
-                      ...styles.personalizeButtonHover,
-                    }
+                        ...styles.personalizeButton,
+                        ...styles.personalizeButtonHover,
+                      }
                     : styles.personalizeButton
                 }
                 onClick={() => navigate(`/contact-form/${memberId}`)}
