@@ -10,7 +10,8 @@ import SignUpPage from "./pages/SignUpPage";
 import { UserProvider, useUser } from "./store/UserContext";
 import LoginPage from "./pages/LoginPage";
 import LandingPage from "./pages/LandingPage";
-
+import MainPageMobile from "./pages/MainPageMobile"; // ✅ 모바일 페이지 추가
+import PlatformRouter from './components/PlatformRouter';
 import ChatbotWidget from "./components/chatbot/ChatbotWidget"; // ✅ 챗봇 위젯 import
 
 // 보호된 라우트 컴포넌트
@@ -57,6 +58,15 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <MainPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* ✅ 모바일 전용 메인 페이지 라우트 추가 */}
+          <Route
+            path="/main-mobile"
+            element={
+              <ProtectedRoute>
+                <MainPageMobile />
               </ProtectedRoute>
             }
           />

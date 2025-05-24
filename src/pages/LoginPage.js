@@ -3,22 +3,45 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../store/UserContext";
 import { loginMember } from "../services/MemberService";
+import { detectPlatform } from '../utils/platformDetector';
 
 const LoginPage = () => {
   const { register, handleSubmit } = useForm();
   const { setUser } = useUser();
   const navigate = useNavigate();
 
+  // const onSubmit = async (data) => {
+  //   try {
+  //     const response = await loginMember(data);
+  //     const userInfo = response.data;
+
+  //     setUser(userInfo);
+  //     localStorage.setItem("memberId", userInfo.id);
+  //     localStorage.setItem("memberName", userInfo.name);
+  //     alert("로그인 성공!");
+  //     navigate("/main", { replace: true });
+  //   } catch (err) {
+  //     alert("이메일 또는 비밀번호를 확인하세요.");
+  //   }
+  // };
   const onSubmit = async (data) => {
     try {
       const response = await loginMember(data);
       const userInfo = response.data;
-
+      
       setUser(userInfo);
       localStorage.setItem("memberId", userInfo.id);
       localStorage.setItem("memberName", userInfo.name);
       alert("로그인 성공!");
-      navigate("/main", { replace: true });
+      
+      // 플랫폼 감지 후 적절한 페이지로 이동
+      const platform = detectPlatform();
+      
+      if (platform.isMobile) {
+        navigate("/main-mobile", { replace: true });
+      } else {
+        navigate("/main", { replace: true });
+      }
     } catch (err) {
       alert("이메일 또는 비밀번호를 확인하세요.");
     }
