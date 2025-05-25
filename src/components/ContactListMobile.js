@@ -13,7 +13,8 @@ import {
   FaSave,
   FaHistory,
 } from "react-icons/fa";
-import PersonalizationModal from "./PersonalizationModal";
+// import PersonalizationModal from "./PersonalizationModal";
+import PersonalizationModalMobile from "./PersonalizationModalMobile"; // ✅ 모바일 모달로 변경
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getFriendsByMemberId, deleteFriend } from "../services/FriendsService";
@@ -519,7 +520,7 @@ const ContactListMobile = ({
 
       {/* 모달 */}
       {isModalOpen && (
-        <PersonalizationModal
+        <PersonalizationModalMobile
           selectedContacts={selectedContacts}
           closeModal={closeModal}
           convertedTexts={convertedTexts}
