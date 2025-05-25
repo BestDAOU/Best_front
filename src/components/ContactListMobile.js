@@ -19,6 +19,8 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getFriendsByMemberId, deleteFriend } from "../services/FriendsService";
 import { getToneByFriendId } from "../services/ToneService"; // 톤 서비스 추가
+import { detectPlatform } from "../utils/platformDetector"; // ✅ 추가
+
 
 const ContactListMobile = ({
   message,
@@ -238,6 +240,18 @@ const ContactListMobile = ({
     }));
   };
 
+
+    // ✅ 플랫폼 감지하여 연락처 추가 페이지로 이동하는 함수 추가
+    const handleAddContact = () => {
+      const platform = detectPlatform();
+      
+      if (platform.isMobile) {
+        navigate(`/contact-form-mobile/${memberId}`);
+      } else {
+        navigate(`/contact-form/${memberId}`);
+      }
+    };
+
   const groupCounts = contacts.reduce((acc, contact) => {
     acc[contact.group] = (acc[contact.group] || 0) + 1;
     return acc;
@@ -306,7 +320,8 @@ const ContactListMobile = ({
         </button>
         <button
           style={styles.addContactButton}
-          onClick={() => navigate(`/contact-form/${memberId}`)}
+          // onClick={() => navigate(`/contact-form/${memberId}`)}
+          onClick={handleAddContact} // ✅ 수정된 함수 사용
         >
           <FaPlus size={14} />
           <span style={styles.buttonText}>연락처 추가</span>

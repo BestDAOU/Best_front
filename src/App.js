@@ -1,12 +1,16 @@
-import React from "react";
+// import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import Header from "./components/Header";
+import HeaderMobile from "./components/HeaderMobile"; // ✅ 모바일 헤더 import
 import MainPage from "./pages/MainPage";
 import MessageGeneration from "./pages/MessageGeneration";
 import MessageGenerationMobile from "./pages/MessageGenerationMobile"; // ✅ 모바일 메시지 생성 페이지 추가
 import ImageGeneration from "./pages/ImageGeneration";
 import ImageGenerationMobile from "./pages/ImageGenerationMobile"; // ✅ 모바일 이미지 생성 페이지 추가
 import ContactForm from "./pages/ContactForm";
+import ContactFormMobile from "./pages/ContactFormMobile"; // ✅ 모바일 연락처 추가 페이지 import
+
 import ChatbotPage from "./pages/ChatbotPage";
 import SignUpPage from "./pages/SignUpPage";
 import { UserProvider, useUser } from "./store/UserContext";
@@ -15,6 +19,7 @@ import LandingPage from "./pages/LandingPage";
 import MainPageMobile from "./pages/MainPageMobile"; // ✅ 모바일 페이지 추가
 import PlatformRouter from './components/PlatformRouter';
 import ChatbotWidget from "./components/chatbot/ChatbotWidget"; // ✅ 챗봇 위젯 import
+import { detectPlatform } from "./utils/platformDetector"; // ✅ 플랫폼 감지 import
 
 // 보호된 라우트 컴포넌트
 const ProtectedRoute = ({ children }) => {
@@ -37,14 +42,50 @@ const ProtectedRoute = ({ children }) => {
 const AppContent = () => {
   const { user } = useUser();
   const location = useLocation();              // 현재 경로 확인
+  const [isMobile, setIsMobile] = useState(false);
+
+    // ✅ 플랫폼 감지
+    useEffect(() => {
+      const checkPlatform = () => {
+        const platform = detectPlatform();
+        setIsMobile(platform.isMobile);
+      };
+  
+      checkPlatform();
+      
+      // 화면 크기 변경 시 다시 체크
+      window.addEventListener('resize', checkPlatform);
+      
+      return () => {
+        window.removeEventListener('resize', checkPlatform);
+      };
+    }, []);
+
+      // ✅ 플랫폼에 따라 적절한 Header 렌더링
+  const renderHeader = () => {
+    if (isMobile) {
+      return <HeaderMobile />;
+    } else {
+      return (
+        <Header
+          isLoggedIn={!!user}
+          userName={user?.name || ""}
+          onLogout={() => alert("로그아웃 기능은 현재 비활성화 상태입니다.")}
+        />
+      );
+    }
+  };
+
+
 
   return (
     <>
-      <Header
+    {renderHeader()}
+      {/* <Header
         isLoggedIn={!!user}
         userName={user?.name || ""}
         onLogout={() => alert("로그아웃 기능은 현재 비활성화 상태입니다.")}
-      />
+      /> */}
       {/* 고정된 헤더 아래 내용 */}
       {/* <div style={{ marginTop: "60px" }}> */}
       <div style={{ marginTop: location.pathname === '/' ? '0px' : '60px' }}>
@@ -103,6 +144,15 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <ImageGeneration />
+              </ProtectedRoute>
+            }
+          />
+            {/* ✅ 모바일용 연락처 추가 페이지 라우트 추가 */}
+          <Route
+            path="/contact-form-mobile/:memberId"
+            element={
+              <ProtectedRoute>
+                <ContactFormMobile />
               </ProtectedRoute>
             }
           />
