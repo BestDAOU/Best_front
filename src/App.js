@@ -3,7 +3,9 @@ import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "r
 import Header from "./components/Header";
 import MainPage from "./pages/MainPage";
 import MessageGeneration from "./pages/MessageGeneration";
+import MessageGenerationMobile from "./pages/MessageGenerationMobile"; // ✅ 모바일 메시지 생성 페이지 추가
 import ImageGeneration from "./pages/ImageGeneration";
+import ImageGenerationMobile from "./pages/ImageGenerationMobile"; // ✅ 모바일 이미지 생성 페이지 추가
 import ContactForm from "./pages/ContactForm";
 import ChatbotPage from "./pages/ChatbotPage";
 import SignUpPage from "./pages/SignUpPage";
@@ -75,6 +77,24 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <MessageGeneration />
+              </ProtectedRoute>
+            }
+          />
+          {/* ✅ 모바일 전용 메시지 생성 페이지 라우트 추가 */}
+          <Route
+            path="/message-generation-mobile"
+            element={
+              <ProtectedRoute>
+                <MessageGenerationMobile />
+              </ProtectedRoute>
+            }
+          />
+          {/* ✅ 모바일 전용 이미지 생성 페이지 라우트 추가 */}
+          <Route
+            path="/image-generation-mobile"
+            element={
+              <ProtectedRoute>
+                <ImageGenerationMobile />
               </ProtectedRoute>
             }
           />

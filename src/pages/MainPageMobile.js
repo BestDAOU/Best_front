@@ -14,6 +14,8 @@ import { format } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { extractKeywordsFromServer } from "../services/KeywordService";
+import { detectPlatform } from "../utils/platformDetector"; // ✅ 추가된 import
+
 
 // 현재 시간을 기준으로 가장 가까운 5분 단위의 시간 계산
 const getInitialReserveTime = () => {
@@ -95,10 +97,45 @@ const MainPageMobile = () => {
         };
     }, [activeDropdown]);
 
+       // 플랫폼 감지하여 메시지 생성 페이지로 이동
+       const handleMessageGeneration = () => {
+        const platform = detectPlatform();
+        
+        if (platform.isMobile) {
+            navigate("/message-generation-mobile");
+        } else {
+            navigate("/message-generation");
+        }
+    };
+
     const toggleDropdown = (type) => {
         setActiveDropdown((prev) => (prev === type ? null : type));
     };
 
+    // const handleImageGeneration = async () => {
+    //     if (!message.trim()) {
+    //         alert("메시지를 입력하세요.");
+    //         return;
+    //     }
+
+    //     try {
+    //         setIsLoading(true);
+    //         const extractedKeywords = await extractKeywordsFromServer(message);
+
+    //         if (!extractedKeywords || extractedKeywords.length === 0) {
+    //             alert("키워드를 추출하지 못했습니다. 메시지를 확인해주세요.");
+    //             return;
+    //         }
+
+    //         const keyword = extractedKeywords[0];
+    //         console.log("추출된 키워드:", keyword);
+
+    //         navigate("/image-generation", { state: { message, keyword } });
+    //     } catch (error) {
+    //         console.error("키워드 추출 중 오류 발생:", error);
+    //         alert("키워드 추출에 실패했습니다. 다시 시도해주세요.");
+    //     }
+    // };
     const handleImageGeneration = async () => {
         if (!message.trim()) {
             alert("메시지를 입력하세요.");
@@ -117,10 +154,19 @@ const MainPageMobile = () => {
             const keyword = extractedKeywords[0];
             console.log("추출된 키워드:", keyword);
 
-            navigate("/image-generation", { state: { message, keyword } });
+            // ✅ 플랫폼 감지하여 적절한 이미지 생성 페이지로 이동
+            const platform = detectPlatform();
+            
+            if (platform.isMobile) {
+                navigate("/image-generation-mobile", { state: { message, keyword } });
+            } else {
+                navigate("/image-generation", { state: { message, keyword } });
+            }
         } catch (error) {
             console.error("키워드 추출 중 오류 발생:", error);
             alert("키워드 추출에 실패했습니다. 다시 시도해주세요.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -254,7 +300,8 @@ const MainPageMobile = () => {
                     <h2 style={styles.sectionTitle}>메시지</h2>
                     <button
                         style={styles.generateButton}
-                        onClick={() => navigate("/message-generation")}
+                        // onClick={() => navigate("/message-generation")}
+                        onClick={handleMessageGeneration} // ✅ 수정된 함수 사용
                     >
                         자동생성
                     </button>
