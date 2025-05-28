@@ -358,13 +358,14 @@ const PersonalizationModal = ({
             onToneGenerated={(newTone) => {
               // 새 어조가 생성되면 현재 톤 목록에 추가
               const newToneData = {
-                id: Date.now(),
-                name: newTone.label,
+                id: newTone.id,
+                name: newTone.name,
                 instruction: newTone.instruction || "",
                 examples: newTone.examples || "",
                 friend_id: currentContact.id,
                 default: false,
               };
+              console.log(newToneData);
 
               setTones((prevTones) => [...prevTones, newToneData]);
 
@@ -380,10 +381,10 @@ const PersonalizationModal = ({
               // 새 어조를 선택 상태로 설정
               setSelectedTones((prev) => ({
                 ...prev,
-                [currentContact.id]: newTone.label,
+                [currentContact.id]: newTone.name,
               }));
 
-              updateToneExamples(newTone.label);
+              updateToneExamples(newTone.name);
             }}
           />
         )}
