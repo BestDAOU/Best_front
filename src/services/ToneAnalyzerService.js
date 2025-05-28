@@ -20,5 +20,5 @@ export const analyzeTone = async (file, targetName, friendId) => {
     },
   });
 
-  return response.data.toneRule;
+  return response.data.savedTones;
 };
