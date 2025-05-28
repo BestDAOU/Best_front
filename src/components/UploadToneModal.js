@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { analyzeTone } from "../services/ToneAnalyzerService";
+import MessageAnimation from "../components/MessageAnimation";
 
 const UploadToneModal = ({ onClose, onToneGenerated, friendId }) => {
   const [step, setStep] = useState(1);
   const [targetName, setTargetName] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleFileUpload = async (file) => {
     if (!targetName.trim()) {
@@ -18,6 +20,7 @@ const UploadToneModal = ({ onClose, onToneGenerated, friendId }) => {
     }
 
     try {
+      setLoading(true); // ⬅️ 로딩 시작
       const toneData = await analyzeTone(file, targetName, friendId);
       onToneGenerated(toneData);
       onClose();
@@ -27,6 +30,8 @@ const UploadToneModal = ({ onClose, onToneGenerated, friendId }) => {
         "UploadToneModal API 오류:",
         error?.response?.data || error.message
       );
+    } finally {
+      setLoading(false); // ⬅️ 로딩 종료
     }
   };
 
@@ -44,17 +49,17 @@ const UploadToneModal = ({ onClose, onToneGenerated, friendId }) => {
     handleFileUpload(file);
   };
 
-  return (
+  return loading ? (
+    <MessageAnimation />
+  ) : (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
         {step === 1 && (
           <>
             <h3 style={styles.stepTitle}>🎙️ 말투 추출 대상 입력</h3>
-
             <p style={styles.stepDescription}>
               텍스트 파일에서 어떤 사람의 말투를 추출할까요?
             </p>
-
             <input
               type="text"
               value={targetName}
@@ -62,7 +67,6 @@ const UploadToneModal = ({ onClose, onToneGenerated, friendId }) => {
               placeholder="예: 안예찬"
               style={styles.stylishInput}
             />
-
             <div style={styles.buttonRow}>
               <button
                 style={{
@@ -84,7 +88,6 @@ const UploadToneModal = ({ onClose, onToneGenerated, friendId }) => {
         {step === 2 && (
           <>
             <h3 style={styles.title}>.txt 파일을 업로드해주세요</h3>
-
             <div
               style={{
                 ...styles.dropZone,
@@ -111,11 +114,9 @@ const UploadToneModal = ({ onClose, onToneGenerated, friendId }) => {
                 파일 선택
               </label>
             </div>
-
             <p style={styles.targetHint}>
               추출 대상: <strong>{targetName}</strong>
             </p>
-
             <div style={styles.actions}>
               <button onClick={() => setStep(1)} style={styles.backButton}>
                 ← 이전
