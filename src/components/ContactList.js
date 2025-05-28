@@ -278,19 +278,21 @@ const ContactList = ({
         <div style={styles.leftSection}>
           <h3 style={styles.sectionTitle}>그룹 선택</h3>
           <div style={styles.groupButtonsList}>
-            {[...new Set(contacts.map((c) => c.group))].map((group) => (
-              <button
-                key={group}
-                onClick={() => toggleGroup(group)}
-                style={
-                  activeGroups.includes(group)
-                    ? styles.activeGroupButton
-                    : styles.groupButton
-                }
-              >
-                {group} ({contacts.filter((c) => c.group === group).length})
-              </button>
-            ))}
+            {[...new Set(contacts.map((c) => c.group))]
+              .sort() // 오름차순 정렬 추가
+              .map((group) => (
+                <button
+                  key={group}
+                  onClick={() => toggleGroup(group)}
+                  style={
+                    activeGroups.includes(group)
+                      ? styles.activeGroupButton
+                      : styles.groupButton
+                  }
+                >
+                  {group} ({contacts.filter((c) => c.group === group).length})
+                </button>
+              ))}
           </div>
         </div>
 
