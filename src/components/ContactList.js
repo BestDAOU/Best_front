@@ -485,7 +485,7 @@ const ContactList = ({
                               />
                             </p>
                             <p>
-                              <strong>메모:</strong>{" "}
+                              <strong>기억:</strong>{" "}
                               <input
                                 name="memo"
                                 value={editData.memo}
@@ -537,7 +537,7 @@ const ContactList = ({
                               <strong>특징:</strong> {contact.tag}
                             </p>
                             <p>
-                              <strong>메모:</strong> {contact.memo}
+                              <strong>기억:</strong> {contact.memo}
                             </p>
 
                             <p>
