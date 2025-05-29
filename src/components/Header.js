@@ -59,17 +59,18 @@ const styles = {
     alignItems: "center",
     backgroundColor: "#ffffff",
     height: "65px",
-    padding: "0 30px", // Increased padding from 20px to 30px
+    padding: "0 30px",
     position: "fixed",
     width: "calc(100%)",
-    // Adjusted width to account for padding
     top: 0,
     zIndex: 1000,
     boxShadow: "0 1px 5px rgba(0, 0, 0, 0.1)",
+    position: "relative", // 추가
   },
   leftSection: {
     display: "flex",
     alignItems: "center",
+    flex: 1, // 변경: flexGrow 대신 flex 사용
   },
   logoLink: {
     textDecoration: "none",
@@ -82,15 +83,17 @@ const styles = {
     fontSize: "36px",
     fontWeight: "bold",
     color: "#4A90E2",
-    margin: "0", // Removed left margin
-    flexGrow: 1,  // Allow brand to take up available space
-    textAlign: "center", // Center text
+    margin: "0",
+    position: "absolute", // 추가
+    left: "50%", // 추가
+    transform: "translateX(-50%)", // 추가: 완전한 중앙 정렬
   },
   rightSection: {
     display: "flex",
     alignItems: "center",
     gap: "15px",
-    minWidth: "180px", // Ensure enough space for buttons
+    flex: 1, // 추가: leftSection과 동일한 크기
+    justifyContent: "flex-end", // 추가: 오른쪽 정렬
   },
   userName: {
     fontSize: "20px",
