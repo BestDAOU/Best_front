@@ -86,7 +86,6 @@ const ContactForm = () => {
       tag: "",
       group: "찐친",
       selectedToneId: 13,
-
     });
   };
   // 연락처 삭제 함수 추가
@@ -122,14 +121,18 @@ const ContactForm = () => {
           features: contact.tag || "",
           memos: contact.memo || "",
           tones: contact.tone || "일반",
-          tones_prompt: "{\"label\":\"친근한 말투\",\"instruction\":\"상대방과 친밀한 관계를 나타내는 말투로 말하세요.\",\"examples\":[\"안녕, 잘 지냈어?\"]}",
+          tones_prompt:
+            '{"label":"친근한 말투","instruction":"상대방과 친밀한 관계를 나타내는 말투로 말하세요.","examples":["안녕, 잘 지냈어?"]}',
           groupName: contact.group || "기본",
           relationType: contact.relationType || "",
           member_id: parseInt(memberId), // 이 필드가 반드시 포함되어야 함
           selectedToneId: 13,
         };
 
-        console.log("서버에 전송하는 데이터:", JSON.stringify(payload, null, 2));
+        console.log(
+          "서버에 전송하는 데이터:",
+          JSON.stringify(payload, null, 2)
+        );
         console.log("멤버 ID:", memberId);
 
         try {
@@ -141,7 +144,7 @@ const ContactForm = () => {
             status: error.response?.status,
             statusText: error.response?.statusText,
             data: error.response?.data,
-            payload
+            payload,
           });
           throw error;
         }
@@ -338,7 +341,7 @@ const ContactForm = () => {
         {/* 취소 버튼 */}
         <button
           style={styles.cancelButton}
-          onClick={() => navigate("/")} // 메인 페이지로 이동
+          onClick={() => navigate("/main")} // 메인 페이지로 이동
         >
           취소
         </button>
